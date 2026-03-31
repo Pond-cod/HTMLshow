@@ -1,11 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, Rocket, LayoutGrid, Mail, LogIn } from "lucide-react";
+import { Menu, X, Rocket, LayoutGrid, Mail, LogIn, Eye } from "lucide-react";
 
 export default function TopNavbar({ settings }: { settings: any }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [viewCount, setViewCount] = useState<string>(settings?.site_views || "0");
+
+  useEffect(() => {
+    // Only track once per browser session to prevent inflated counts from simple reloads
+    const hasTracked = sessionStorage.getItem("view_tracked");
+    if (!hasTracked) {
+      sessionStorage.setItem("view_tracked", "1");
+      fetch("/api/views", { method: "POST" })
+        .then(res => res.json())
+        .then(data => {
+          if(data.success && data.count) {
+             setViewCount(data.count);
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   return (
     <nav className="fixed w-full z-50 transition-all duration-300 bg-slate-950/80 backdrop-blur-xl border-b border-white/5">
@@ -22,8 +39,18 @@ export default function TopNavbar({ settings }: { settings: any }) {
             </span>
           </Link>
 
+          {/* Center View Counter Badge */}
+          <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 items-center gap-2 bg-slate-900/60 border border-slate-700/50 px-4 py-1.5 rounded-full shadow-[inset_0_0_15px_rgba(250,204,21,0.05)] backdrop-blur-md transition-all hover:bg-slate-800/80 hover:border-yellow-400/30">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
+            </span>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Views</span>
+            <span className="text-sm font-black text-yellow-400 tracking-wider bg-slate-950/50 px-2 py-0.5 rounded-md border border-slate-800">{viewCount}</span>
+          </div>
+
           {/* Desktop Links */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
             <Link href="/" className="text-sm font-bold text-slate-300 hover:text-yellow-400 transition-colors flex items-center gap-2">
               <LayoutGrid size={16} /> Showcase
             </Link>
@@ -62,6 +89,11 @@ export default function TopNavbar({ settings }: { settings: any }) {
       {/* Mobile Menu Overlay */}
       <div className={`md:hidden absolute top-20 w-full bg-slate-900 border-b border-slate-800 transition-all duration-300 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
         <div className="px-4 py-6 space-y-4 shadow-2xl">
+          <div className="flex items-center gap-3 px-4 py-3 bg-slate-950/50 rounded-xl border border-slate-800/80 mb-4">
+            <Eye className="w-5 h-5 text-yellow-400" />
+            <span className="text-slate-300 font-semibold font-sm">Total Views :</span>
+            <span className="text-yellow-400 font-bold ml-auto">{viewCount}</span>
+          </div>
           <Link 
             href="/" 
             onClick={() => setIsOpen(false)}

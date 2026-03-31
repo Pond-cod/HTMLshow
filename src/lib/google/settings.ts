@@ -21,7 +21,8 @@ const defaultSettings: SiteSettings = {
   hero_subtitle: "ขับเคลื่อนสู่อนาคตผ่านผลงานแห่งนวัตกรรม สำรวจโซลูชัน IoT และระบบอัจฉริยะที่เราได้สร้างสรรค์ เสมือนฟันเฟืองที่ผลักดันทุกความสำเร็จ",
   hero_badge: "Technology Powerhouse",
   facebook_url: "https://facebook.com",
-  contact_email: "contact@deedeviot.com"
+  contact_email: "contact@deedeviot.com",
+  site_views: "0"
 };
 
 const ensureSettingsSheetExists = async (sheets: any, spreadsheetId: string) => {
@@ -128,5 +129,59 @@ export const updateSiteSettings = async (updates: Partial<SiteSettings>): Promis
   } catch (error) {
     console.error("Failed to update settings:", error);
     return false;
+  }
+};
+
+export const incrementSiteViews = async (): Promise<string> => {
+  const spreadsheetId = getSheetId();
+  if (!spreadsheetId) return "0";
+
+  const sheets = getSheetsClient();
+  try {
+    await ensureSettingsSheetExists(sheets, spreadsheetId);
+    
+    // Read current settings to parse out the view count and row position
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `${SETTINGS_SHEET_NAME}!A2:B`,
+    });
+
+    const rows = response.data.values || [];
+    let rowIndex = -1;
+    let currentViews = 0;
+    
+    rows.forEach((row, index) => {
+      if (row[0] === 'site_views') {
+        rowIndex = index;
+        currentViews = parseInt(row[1] || "0", 10);
+      }
+    });
+
+    // Increment
+    currentViews += 1;
+
+    // Update or Insert safely mapping to purely the B column for that row
+    if (rowIndex === -1) {
+      // Not found, append row
+      await sheets.spreadsheets.values.append({
+        spreadsheetId,
+        range: `${SETTINGS_SHEET_NAME}!A:B`,
+        valueInputOption: "USER_ENTERED",
+        requestBody: { values: [["site_views", String(currentViews)]] }
+      });
+    } else {
+      // Target exact Cell (rowIndex is 0-indexed mapped from A2, so A2 = index 0. We update B[index+2])
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `${SETTINGS_SHEET_NAME}!B${rowIndex + 2}`,
+        valueInputOption: "USER_ENTERED",
+        requestBody: { values: [[String(currentViews)]] }
+      });
+    }
+
+    return String(currentViews);
+  } catch (error) {
+    console.error("Failed to increment views:", error);
+    return "0";
   }
 };
