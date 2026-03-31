@@ -883,6 +883,9 @@ video {
 .cursor-pointer {
   cursor: pointer;
 }
+.appearance-none {
+  appearance: none;
+}
 .grid-cols-1 {
   grid-template-columns: repeat(1, minmax(0, 1fr));
 }
@@ -918,6 +921,9 @@ video {
 }
 .gap-8 {
   gap: 2rem;
+}
+.gap-0 {
+  gap: 0px;
 }
 .space-y-2 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-y-reverse: 0;
@@ -1025,6 +1031,9 @@ video {
 .border-t {
   border-top-width: 1px;
 }
+.border-r-0 {
+  border-right-width: 0px;
+}
 .border-dashed {
   border-style: dashed;
 }
@@ -1099,6 +1108,9 @@ video {
 }
 .border-transparent {
   border-color: transparent;
+}
+.border-yellow-400\/30 {
+  border-color: rgb(250 204 21 / 0.3);
 }
 .border-t-transparent {
   border-top-color: transparent;
@@ -1209,6 +1221,16 @@ video {
 .bg-slate-950\/30 {
   background-color: rgb(2 6 23 / 0.3);
 }
+.bg-slate-700 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(51 65 85 / var(--tw-bg-opacity, 1));
+}
+.bg-slate-800\/30 {
+  background-color: rgb(30 41 59 / 0.3);
+}
+.bg-yellow-400\/20 {
+  background-color: rgb(250 204 21 / 0.2);
+}
 .bg-gradient-to-br {
   background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
 }
@@ -1271,6 +1293,9 @@ video {
 }
 .bg-clip-text {
   background-clip: text;
+}
+.stroke-\[3px\] {
+  stroke-width: 3px;
 }
 .object-cover {
   object-fit: cover;
@@ -1821,6 +1846,11 @@ body {
   border-color: rgb(59 130 246 / var(--tw-border-opacity, 1));
 }
 
+.focus-within\:border-yellow-400:focus-within {
+  --tw-border-opacity: 1;
+  border-color: rgb(250 204 21 / var(--tw-border-opacity, 1));
+}
+
 .hover\:-translate-y-1:hover {
   --tw-translate-y: -0.25rem;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
@@ -1977,6 +2007,16 @@ body {
   color: rgb(250 204 21 / var(--tw-text-opacity, 1));
 }
 
+.hover\:text-white:hover {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+}
+
+.hover\:text-yellow-300:hover {
+  --tw-text-opacity: 1;
+  color: rgb(253 224 71 / var(--tw-text-opacity, 1));
+}
+
 .hover\:shadow-2xl:hover {
   --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);
@@ -2047,6 +2087,11 @@ body {
 
 .disabled\:opacity-50:disabled {
   opacity: 0.5;
+}
+
+.group:focus-within .group-focus-within\:border-yellow-400 {
+  --tw-border-opacity: 1;
+  border-color: rgb(250 204 21 / var(--tw-border-opacity, 1));
 }
 
 .group:hover .group-hover\:translate-y-0 {

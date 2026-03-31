@@ -135,19 +135,19 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-10">
         <div>
-          <h1 className="text-3xl font-bold dark:text-white">
+          <h1 className="text-4xl font-extrabold text-white tracking-tight">
             {initialProject ? "Edit Project" : "New Project"}
           </h1>
-          <p className="text-gray-500 mt-1">Configure your project details and HTML content</p>
+          <p className="text-slate-400 mt-2 font-medium">Configure your project details and HTML content</p>
         </div>
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-blue-500/30 flex items-center gap-2 transition-all disabled:opacity-75"
+          className="bg-yellow-400 hover:bg-yellow-500 text-slate-950 px-6 py-3 rounded-2xl font-bold shadow-[0_0_20px_rgba(250,204,21,0.4)] flex items-center gap-2 transition-all hover:scale-105 disabled:opacity-50"
         >
-          {isSaving ? <Loader2 className="animate-spin w-5 h-5" /> : <Save className="w-5 h-5" />}
+          {isSaving ? <Loader2 className="animate-spin w-5 h-5" /> : <Save className="w-5 h-5 stroke-[3px]" />}
           {isSaving ? "Saving..." : "Save Project"}
         </button>
       </div>
@@ -155,28 +155,28 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-6">
           {/* Metadata Card */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 space-y-5">
-            <h2 className="text-xl font-semibold dark:text-white mb-2 border-b border-gray-100 dark:border-gray-800 pb-4">Basic Info</h2>
+          <div className="bg-slate-900/50 backdrop-blur-xl rounded-3xl p-8 border border-slate-800 shadow-2xl space-y-5">
+            <h2 className="text-xl font-bold text-white mb-4 border-b border-slate-800/80 pb-4">Basic Info</h2>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">Title</label>
               <input
                 type="text"
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all"
                 placeholder="Ex: Marketing Landing Page"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">Status</label>
               <select
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all appearance-none cursor-pointer"
               >
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
@@ -185,20 +185,20 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
           </div>
 
           {/* Media Links Card */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 space-y-5">
-            <h2 className="text-xl font-semibold dark:text-white mb-2 border-b border-gray-100 dark:border-gray-800 pb-4">Media Files</h2>
+          <div className="bg-slate-900/50 backdrop-blur-xl rounded-3xl p-8 border border-slate-800 shadow-2xl space-y-5">
+            <h2 className="text-xl font-bold text-white mb-4 border-b border-slate-800/80 pb-4">Media Files</h2>
 
             {/* Thumbnail */}
             <div>
-               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Thumbnail Preview</label>
-               <div className="flex gap-2 mb-2 items-center">
-                  <UploadButton field="thumbnail_url" uploadingField={uploadingField} onUpload={handleFileUpload} accept="image/*" />
-               </div>
-               <div className="flex gap-2">
-                 <div className="p-2 border border-gray-200 dark:border-gray-700 rounded-l-xl bg-gray-50 dark:bg-gray-800">
-                    <LinkIcon className="text-gray-400 w-5 h-5"/>
+               <label className="block text-sm font-semibold text-slate-300 mb-2 flex justify-between items-center">
+                 <span>Thumbnail Image</span>
+                 <UploadButton field="thumbnail_url" uploadingField={uploadingField} onUpload={handleFileUpload} accept="image/*" />
+               </label>
+               <div className="flex gap-0 group mt-3">
+                 <div className="p-3 border border-slate-700 border-r-0 rounded-l-xl bg-slate-800/50 flex items-center justify-center shrink-0 group-focus-within:border-yellow-400 transition-colors">
+                    <LinkIcon className="text-slate-400 w-5 h-5"/>
                  </div>
-                 <input type="text" name="thumbnail_url" value={formData.thumbnail_url} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-r-xl bg-transparent text-sm dark:text-gray-300" placeholder="Drive URL will appear here" />
+                 <input type="text" name="thumbnail_url" value={formData.thumbnail_url} onChange={handleChange} className="w-full px-4 py-3 border border-slate-700 rounded-r-xl bg-slate-800/30 text-white text-sm outline-none group-focus-within:border-yellow-400 transition-colors" placeholder="Drive URL will appear here" />
                </div>
             </div>
           </div>
@@ -206,22 +206,22 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
 
         {/* Code & Preview Editor */}
         <div className="lg:col-span-2">
-          <div className="bg-gray-900 rounded-2xl shadow-sm border border-gray-800 overflow-hidden h-[800px] flex flex-col">
-            <div className="border-b border-gray-800 p-4 shrink-0 flex items-center justify-between bg-gray-950">
+          <div className="bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 overflow-hidden h-[800px] flex flex-col">
+            <div className="border-b border-slate-800/80 p-5 shrink-0 flex items-center justify-between bg-slate-950">
               <div className="flex items-center gap-6">
-                <h2 className="text-lg font-semibold text-white flex items-center gap-3">
-                  <span className="bg-blue-500/20 text-blue-400 px-2.5 py-1 rounded-md text-sm font-mono tracking-widest border border-blue-500/30">&lt;/&gt;</span>
+                <h2 className="text-lg font-bold text-white flex items-center gap-3">
+                  <span className="bg-yellow-400/20 text-yellow-400 px-2.5 py-1 rounded-md text-sm font-mono tracking-widest border border-yellow-400/30">&lt;/&gt;</span>
                   HTML Space
                 </h2>
-                <div className="flex bg-gray-900 rounded-lg p-1 border border-gray-800">
-                  <button type="button" onClick={() => setActiveTab('editor')} className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'editor' ? 'bg-gray-800 text-white shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}>Code</button>
-                  <button type="button" onClick={() => setActiveTab('preview')} className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'preview' ? 'bg-gray-800 text-white shadow-sm' : 'text-gray-500 hover:text-gray-300'}`}>Live Preview</button>
+                <div className="flex bg-slate-800/50 rounded-lg p-1 border border-slate-700">
+                  <button type="button" onClick={() => setActiveTab('editor')} className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === 'editor' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}>Code</button>
+                  <button type="button" onClick={() => setActiveTab('preview')} className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-all ${activeTab === 'preview' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}>Live Preview</button>
                 </div>
               </div>
               
               <div className="flex items-center gap-3">
-                <div className="flex bg-gray-900 border border-gray-700 rounded-lg overflow-hidden focus-within:border-blue-500 transition-colors">
-                  <span className="bg-gray-800 text-gray-400 text-xs px-3 py-2 flex items-center border-r border-gray-700">Drive ID</span>
+                <div className="flex bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden focus-within:border-yellow-400 transition-colors">
+                  <span className="bg-slate-800 text-slate-400 font-bold text-xs px-3 py-2 flex items-center border-r border-slate-700 uppercase tracking-widest">Drive ID</span>
                   <input
                     type="text"
                     value={formData.html_drive_id}
@@ -234,7 +234,7 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
                       setFormData(prev => ({ ...prev, html_drive_id: val }));
                     }}
                     placeholder="Paste full URL or ID here..."
-                    className="bg-transparent text-sm font-mono text-blue-400 w-48 px-3 py-1.5 outline-none"
+                    className="bg-transparent text-sm font-mono text-yellow-400 w-48 px-3 py-1.5 outline-none"
                   />
                 </div>
                 
@@ -257,13 +257,13 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
                         setIsLoadingHtml(false);
                       }
                     }}
-                    className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-bold transition-all whitespace-nowrap shadow-md focus:ring-2 ring-blue-500/50"
+                    className="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-4 py-2 rounded-xl font-bold transition-all whitespace-nowrap shadow-md focus:border-yellow-400"
                   >
                     Load File
                   </button>
                 ) : (
-                  <label className="cursor-pointer bg-white text-gray-900 px-4 py-2 rounded-lg text-xs font-bold shadow-md hover:bg-gray-100 transition-colors flex items-center gap-2 whitespace-nowrap">
-                    {uploadingField === "html_drive_id" ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
+                  <label className="cursor-pointer bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-colors flex items-center gap-2 whitespace-nowrap">
+                    {uploadingField === "html_drive_id" ? <Loader2 className="w-4 h-4 animate-spin text-yellow-400" /> : <UploadCloud className="w-4 h-4 text-yellow-400" />}
                     Upload File
                     <input type="file" className="hidden" accept=".html,text/html" onChange={(e) => handleFileUpload(e, "html_drive_id")} />
                   </label>
@@ -306,11 +306,11 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
   );
 }
 
-function UploadButton({ field, uploadingField, onUpload, accept, label = "Upload New" }: any) {
+function UploadButton({ field, uploadingField, onUpload, accept, label = "Upload Image" }: any) {
   const isUploading = uploadingField === field;
   return (
-    <label className={`cursor-pointer inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-      isUploading ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed' : 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-800/40'
+    <label className={`cursor-pointer inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors border ${
+      isUploading ? 'bg-slate-800 border-slate-700 text-slate-500 cursor-not-allowed' : 'bg-slate-800 border-slate-700 text-yellow-400 hover:bg-slate-700 hover:text-yellow-300'
     }`}>
       {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
       {isUploading ? "Uploading..." : label}
