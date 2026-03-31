@@ -9,7 +9,12 @@ const SCOPES = [
 
 export const getAuthClient = () => {
   const email = process.env.GOOGLE_CLIENT_EMAIL;
-  const key = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+  let key = process.env.GOOGLE_PRIVATE_KEY;
+
+  if (key && key.startsWith('"') && key.endsWith('"')) {
+    key = key.slice(1, -1);
+  }
+  key = key?.replace(/\\n/g, '\n');
 
   if (!email || !key) {
     throw new Error("Missing Google API credentials. Check GOOGLE_CLIENT_EMAIL and GOOGLE_PRIVATE_KEY.");
