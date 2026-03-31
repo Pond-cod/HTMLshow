@@ -5,6 +5,8 @@ const SETTINGS_SHEET_NAME = "Settings";
 
 export interface SiteSettings {
   hero_title: string;
+  hero_title_size: string;
+  hero_title_color: string;
   hero_subtitle: string;
   hero_badge: string;
   facebook_url: string;
@@ -14,6 +16,8 @@ export interface SiteSettings {
 
 const defaultSettings: SiteSettings = {
   hero_title: "Gearing Up <br /> For The Future.",
+  hero_title_size: "72",
+  hero_title_color: "#ffffff",
   hero_subtitle: "ขับเคลื่อนสู่อนาคตผ่านผลงานแห่งนวัตกรรม สำรวจโซลูชัน IoT และระบบอัจฉริยะที่เราได้สร้างสรรค์ เสมือนฟันเฟืองที่ผลักดันทุกความสำเร็จ",
   hero_badge: "Technology Powerhouse",
   facebook_url: "https://facebook.com",

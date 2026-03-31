@@ -7,6 +7,8 @@ import { Save, Settings2 } from "lucide-react";
 export default function SettingsPage() {
   const [settings, setSettings] = useState<any>({
     hero_title: "",
+    hero_title_size: "72",
+    hero_title_color: "#ffffff",
     hero_subtitle: "",
     hero_badge: "",
     facebook_url: "",
@@ -106,6 +108,43 @@ export default function SettingsPage() {
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all font-mono text-sm"
                 placeholder="Gearing Up <br /> For The Future."
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 bg-slate-950/30 p-4 rounded-xl border border-slate-800/80">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">Title Size (px)</label>
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="range" 
+                    name="hero_title_size" 
+                    min="32" max="150" step="1"
+                    value={settings.hero_title_size || "72"} 
+                    onChange={handleChange}
+                    className="w-full accent-yellow-400"
+                  />
+                  <span className="text-white font-mono text-sm bg-slate-800 px-2 py-1 rounded-md min-w-[3rem] text-center">{settings.hero_title_size || "72"}</span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wider">Title Color</label>
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="color" 
+                    name="hero_title_color" 
+                    value={settings.hero_title_color || "#ffffff"} 
+                    onChange={handleChange}
+                    className="w-10 h-10 rounded cursor-pointer bg-slate-800 border-0 p-1"
+                  />
+                  <input 
+                    type="text" 
+                    name="hero_title_color" 
+                    value={settings.hero_title_color || "#ffffff"} 
+                    onChange={handleChange}
+                    className="flex-1 bg-slate-800 text-white px-3 py-2 rounded-lg text-sm font-mono outline-none focus:border-yellow-400 border border-transparent transition-all"
+                  />
+                </div>
+              </div>
             </div>
 
             <div>

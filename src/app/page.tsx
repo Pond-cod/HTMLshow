@@ -29,7 +29,11 @@ export default async function Home() {
           )}
           
           <h1 
-            className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tighter lg:text-7xl mb-6 text-slate-50 leading-tight drop-shadow-lg"
+            className="font-extrabold tracking-tighter mb-6 leading-tight drop-shadow-lg"
+            style={{ 
+              fontSize: settings.hero_title_size ? `clamp(2.5rem, 8vw, ${settings.hero_title_size}px)` : undefined,
+              color: settings.hero_title_color || undefined
+            }}
             dangerouslySetInnerHTML={{ __html: settings.hero_title }}
           />
           
