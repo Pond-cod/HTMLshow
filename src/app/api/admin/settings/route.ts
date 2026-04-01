@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { updateSiteSettings, getSiteSettings } from "@/lib/google/settings";
+import * as fs from 'fs';
+import * as path from 'path';
 
 export async function GET() {
   try {
@@ -17,6 +19,7 @@ export async function PUT(request: Request) {
     
     return NextResponse.json({ success: true, message: "Settings updated successfully." });
   } catch (error: any) {
+    fs.writeFileSync(path.join(process.cwd(), 'sheets-error.log'), error.message || String(error));
     return NextResponse.json({ error: error.message || "Failed to update settings" }, { status: 500 });
   }
 }

@@ -35,27 +35,31 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    const promise = fetch("/api/admin/settings", {
+    const savePromise = fetch("/api/admin/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(settings)
+    }).then(async (res) => {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update settings in server");
+      }
+      return data;
     });
 
-    toast.promise(promise, {
+    toast.promise(savePromise, {
       loading: "Saving global settings to Google Sheets...",
-      success: async (res) => {
-        if (!res.ok) {
-          const err = await res.json().catch(()=>({}));
-          throw new Error(err.error || "Failed to save");
-        }
-        setIsSaving(false);
-        return "Global Settings saved successfully!";
-      },
+      success: "Global Settings saved successfully!",
       error: (err: any) => {
-        setIsSaving(false);
         return err.message || "Failed to save settings.";
       }
     });
+
+    try {
+      await savePromise;
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (isLoading) {
