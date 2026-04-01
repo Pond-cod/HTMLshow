@@ -61,6 +61,23 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string) => {
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
+    
+    if (fieldName === "html_drive_id") {
+      // For HTML files, we simply read the raw file contents locally 
+      // instead of uploading it to Google Drive.
+      const fileReader = new FileReader();
+      fileReader.onload = (readerEvent) => {
+        setHtmlContent(readerEvent.target?.result as string);
+        // If no ID exists yet to map the HTML to, generate one locally
+        if (!formData.html_drive_id) {
+          const newHtmlId = initialProject?.id || `html_${Date.now()}`;
+          setFormData((prev) => ({ ...prev, html_drive_id: newHtmlId }));
+        }
+      };
+      fileReader.readAsText(file);
+      return;
+    }
+
     setUploadingField(fieldName);
     
     try {
@@ -74,15 +91,7 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
       const result = await res.json();
       
       if (result.success) {
-        if (fieldName === "html_drive_id") {
-          setFormData((prev) => ({ ...prev, html_drive_id: result.fileId }));
-          // Load the content immediately into the editor
-          const fileReader = new FileReader();
-          fileReader.onload = (e) => setHtmlContent(e.target?.result as string);
-          fileReader.readAsText(file);
-        } else {
-          setFormData((prev) => ({ ...prev, [fieldName]: result.url }));
-        }
+        setFormData((prev) => ({ ...prev, [fieldName]: result.url }));
       } else {
         alert(result.message || "Failed to upload file");
       }
@@ -107,7 +116,7 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
         body: JSON.stringify(bodyPayload),
       });
 
-      // 2. Save HTML content back to Drive if ID exists
+      // 2. Save HTML content to Sheets instead of Drive
       if (formData.html_drive_id && htmlContent) {
         await fetch("/api/admin/html", {
           method: "PUT",
@@ -249,7 +258,7 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
                           setHtmlContent(await res.text());
                         } else {
                           const err = await res.json().catch(() => ({}));
-                          setHtmlContent(`<!-- ERROR: No permission to read this Drive ID: ${err.message || 'Access Denied'}.\nPlease make sure you shared the file with the Service Account email! -->`);
+                          setHtmlContent(`<!-- ERROR: Could not fetch HTML: ${err.message || 'Access Denied'} -->`);
                         }
                       } catch (e: any) {
                         setHtmlContent(`<!-- Error: ${e.message} -->`);

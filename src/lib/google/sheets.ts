@@ -221,3 +221,114 @@ export const deleteProject = async (id: string): Promise<boolean> => {
 
   return true;
 };
+
+// Helper to ensure 'HTML_Code' sheet exists
+const HTML_SHEET_NAME = "HTML_Code";
+
+const ensureHtmlSheetExists = async (sheets: any, spreadsheetId: string) => {
+  const response = await sheets.spreadsheets.get({
+    spreadsheetId,
+    includeGridData: false,
+  });
+  
+  const existingSheets = response.data.sheets || [];
+  const exists = existingSheets.some((s: any) => s.properties.title === HTML_SHEET_NAME);
+  
+  if (!exists) {
+    // Create the HTML_Code sheet
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          {
+            addSheet: {
+              properties: {
+                title: HTML_SHEET_NAME,
+              }
+            }
+          }
+        ]
+      }
+    });
+
+    // Add headers to the new sheet
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${HTML_SHEET_NAME}!A1:C1`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: { values: [["project_id", "html_content", "last_updated"]] },
+    });
+  }
+  return HTML_SHEET_NAME;
+};
+
+export const getHtmlContentById = async (projectId: string): Promise<string | null> => {
+  const spreadsheetId = getSheetId();
+  if (!spreadsheetId) return null;
+
+  const sheets = getSheetsClient();
+  try {
+    const sheetName = await ensureHtmlSheetExists(sheets, spreadsheetId);
+    const range = `${sheetName}!A2:B`;
+
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range,
+    });
+
+    const rows = response.data.values || [];
+    const row = rows.find(r => r[0] === projectId);
+    
+    if (row && row[1]) {
+      return row[1];
+    }
+    return null;
+  } catch (error: any) {
+    console.error("Error fetching HTML from sheet:", error?.message);
+    return null;
+  }
+};
+
+export const updateHtmlContent = async (projectId: string, content: string): Promise<boolean> => {
+  const spreadsheetId = getSheetId();
+  if (!spreadsheetId) return false;
+
+  const sheets = getSheetsClient();
+  try {
+    const sheetName = await ensureHtmlSheetExists(sheets, spreadsheetId);
+    const range = `${sheetName}!A2:C`;
+
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range,
+    });
+
+    const rows = response.data.values || [];
+    const rowIndex = rows.findIndex(row => row[0] === projectId);
+    const timestamp = new Date().toISOString();
+    
+    if (rowIndex === -1) {
+      // Append new row
+      await sheets.spreadsheets.values.append({
+        spreadsheetId,
+        range: `${sheetName}!A:C`,
+        valueInputOption: "USER_ENTERED",
+        requestBody: { values: [[projectId, content, timestamp]] },
+      });
+    } else {
+      // Update existing row
+      const sheetRow = rowIndex + 2; // 0-indexed + 1 for header offset + 1 because rows array is from A2
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `${sheetName}!A${sheetRow}:C${sheetRow}`,
+        valueInputOption: "USER_ENTERED",
+        requestBody: { values: [[projectId, content, timestamp]] },
+      });
+    }
+
+    return true;
+  } catch (error: any) {
+    console.error("Error saving HTML to sheet:", error?.message);
+    return false;
+  }
+};
