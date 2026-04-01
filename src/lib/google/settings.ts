@@ -14,6 +14,9 @@ export interface SiteSettings {
   cta_text: string;
   cta_size: string;
   cta_color: string;
+  site_font: string;
+  custom_font_id: string;
+  custom_font_name: string;
   [key: string]: string;
 }
 
@@ -28,6 +31,9 @@ const defaultSettings: SiteSettings = {
   cta_text: "คลิกเลือกดูผลงานผลงานได้เลย",
   cta_size: "18",
   cta_color: "#ef4444",
+  site_font: "inter",
+  custom_font_id: "",
+  custom_font_name: "",
   site_views: "0"
 };
 

@@ -20,6 +20,20 @@ export const getFileContent = async (fileId: string): Promise<string> => {
   }
 };
 
+export const getFileBuffer = async (fileId: string): Promise<ArrayBuffer> => {
+  const drive = getDriveClient();
+  try {
+    const res = await drive.files.get(
+      { fileId, alt: "media" },
+      { responseType: "arraybuffer" }
+    );
+    return res.data as ArrayBuffer;
+  } catch (error: any) {
+    console.error("Error fetching drive file binary buffer:", error.message || error);
+    throw error;
+  }
+};
+
 export const updateFileContent = async (fileId: string, content: string): Promise<boolean> => {
   const drive = getDriveClient();
   try {
@@ -67,8 +81,8 @@ export const uploadFile = async (
       fields: "id, webViewLink, webContentLink",
     });
     
-    // Set permission to anyone with link if it's media (images/videos)
-    if (file.data.id && (mimetype.startsWith('image/') || mimetype.startsWith('video/'))) {
+    // Set permission to anyone with link if it's media (images/videos/fonts)
+    if (file.data.id && (mimetype.startsWith('image/') || mimetype.startsWith('video/') || mimetype.startsWith('font/') || mimetype.includes('ttf') || mimetype.includes('otf') || mimetype.includes('woff'))) {
       try {
         await drive.permissions.create({
           fileId: file.data.id,

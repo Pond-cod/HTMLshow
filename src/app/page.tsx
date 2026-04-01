@@ -13,7 +13,21 @@ export default async function Home() {
   ]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 font-sans selection:bg-yellow-400 selection:text-slate-950">
+    <div 
+      className="min-h-screen bg-slate-950 text-slate-50 selection:bg-yellow-400 selection:text-slate-950"
+      style={{ fontFamily: settings.site_font === 'custom' && settings.custom_font_id ? 'CustomUserFont, sans-serif' : (settings.site_font ? `var(--font-${settings.site_font}), sans-serif` : undefined) }}
+    >
+      {settings.site_font === 'custom' && settings.custom_font_id && (
+        <style dangerouslySetInnerHTML={{__html: `
+          @font-face {
+            font-family: 'CustomUserFont';
+            src: url('/api/proxy-font?id=${settings.custom_font_id}') format('${(settings.custom_font_name || '').endsWith(".otf") ? "opentype" : "truetype"}');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+          }
+        `}} />
+      )}
       <TopNavbar settings={settings} />
 
       <main className="relative overflow-hidden flex flex-col items-center p-6 pt-32 sm:p-12 sm:pt-40 lg:p-24 lg:pt-48">

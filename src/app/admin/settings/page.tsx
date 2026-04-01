@@ -15,7 +15,8 @@ export default function SettingsPage() {
     contact_email: "",
     cta_text: "คลิกเลือกดูผลงานผลงานได้เลย",
     cta_size: "18",
-    cta_color: "#ef4444"
+    cta_color: "#ef4444",
+    site_font: "inter"
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -29,7 +30,43 @@ export default function SettingsPage() {
       });
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleFontUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check if it's a valid font file
+    if (!file.name.endsWith('.ttf') && !file.name.endsWith('.otf')) {
+      toast.error('Please upload a valid .ttf or .otf font file');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const promise = fetch("/api/admin/upload", {
+      method: "POST",
+      body: formData,
+    }).then(async (res) => {
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.message || "Upload failed");
+      
+      setSettings((prev: any) => ({
+        ...prev,
+        custom_font_id: data.id,
+        custom_font_name: file.name,
+        site_font: "custom" // Automatically switch to custom font
+      }));
+      return data;
+    });
+
+    toast.promise(promise, {
+      loading: "Uploading font to Google Drive...",
+      success: `Font ${file.name} uploaded and selected successfully!`,
+      error: "Failed to upload custom font"
+    });
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setSettings({ ...settings, [e.target.name]: e.target.value });
   };
 
@@ -221,6 +258,57 @@ export default function SettingsPage() {
               </div>
             </div>
 
+          </div>
+        </div>
+
+        {/* Global Typography */}
+        <div className="bg-slate-900/50 backdrop-blur-xl rounded-3xl p-8 border border-slate-800 shadow-2xl h-fit">
+          <div className="flex items-center gap-3 mb-6">
+            <Settings2 className="text-yellow-400" size={24} />
+            <h2 className="text-xl font-bold text-white">Global Typography</h2>
+          </div>
+
+          <div className="space-y-5">
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">Display Font Family</label>
+              <select 
+                name="site_font" 
+                value={settings.site_font || "inter"} 
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all cursor-pointer font-bold appearance-none"
+              >
+                <option value="inter">Inter (English Standard)</option>
+                <option value="kanit">Kanit - คณิต</option>
+                <option value="prompt">Prompt - พร้อม</option>
+                <option value="sarabun">Sarabun - สารบรรณ</option>
+                <option value="mitr">Mitr - มิตร</option>
+                {settings.custom_font_id && (
+                  <option value="custom">Custom Font - {settings.custom_font_name || 'Uploaded Font'}</option>
+                )}
+              </select>
+              <p className="text-xs text-slate-500 mt-2 mb-4">Fonts will apply to the main website layout. Inter is standard. Kanit and Prompt are great for Thai context.</p>
+
+              <div className="p-4 bg-slate-950/40 rounded-xl border border-dashed border-slate-700">
+                <label className="block text-sm font-semibold text-slate-300 mb-2">Upload Custom Font (.ttf / .otf)</label>
+                <div className="flex items-center gap-4">
+                  <label className="cursor-pointer bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-slate-600">
+                    Choose Font File
+                    <input 
+                      type="file" 
+                      accept=".ttf,.otf" 
+                      onChange={handleFontUpload} 
+                      className="hidden" 
+                    />
+                  </label>
+                  <span className="text-sm text-yellow-400 font-mono truncate max-w-[200px]">
+                    {settings.custom_font_name || 'No custom font uploaded'}
+                  </span>
+                </div>
+                {settings.custom_font_id && (
+                   <p className="text-xs text-green-400 mt-2">Custom font is hosted on Google Drive and ready to use. Selecting "Custom Font" from the dropdown will apply it globally.</p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
