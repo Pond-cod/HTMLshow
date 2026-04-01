@@ -30,40 +30,25 @@ export default function SettingsPage() {
       });
   }, []);
 
-  const handleFontUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Check if it's a valid font file
-    if (!file.name.endsWith('.ttf') && !file.name.endsWith('.otf')) {
-      toast.error('Please upload a valid .ttf or .otf font file');
-      return;
+  const handleFontUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value;
+    
+    // Extract drive ID
+    let driveId = url;
+    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (match) {
+      driveId = match[1];
+    } else if (url.includes('?id=')) {
+      const params = new URLSearchParams(url.split('?')[1]);
+      driveId = params.get('id') || url;
     }
 
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const promise = fetch("/api/admin/upload", {
-      method: "POST",
-      body: formData,
-    }).then(async (res) => {
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.message || "Upload failed");
-      
-      setSettings((prev: any) => ({
-        ...prev,
-        custom_font_id: data.id,
-        custom_font_name: file.name,
-        site_font: "custom" // Automatically switch to custom font
-      }));
-      return data;
-    });
-
-    toast.promise(promise, {
-      loading: "Uploading font to Google Drive...",
-      success: `Font ${file.name} uploaded and selected successfully!`,
-      error: "Failed to upload custom font"
-    });
+    setSettings((prev: any) => ({
+      ...prev,
+      custom_font_id: driveId,
+      custom_font_name: url ? "Google Drive Link" : "",
+      site_font: url ? "custom" : prev.site_font
+    }));
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -288,25 +273,20 @@ export default function SettingsPage() {
               </select>
               <p className="text-xs text-slate-500 mt-2 mb-4">Fonts will apply to the main website layout. Inter is standard. Kanit and Prompt are great for Thai context.</p>
 
-              <div className="p-4 bg-slate-950/40 rounded-xl border border-dashed border-slate-700">
-                <label className="block text-sm font-semibold text-slate-300 mb-2">Upload Custom Font (.ttf / .otf)</label>
-                <div className="flex items-center gap-4">
-                  <label className="cursor-pointer bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-slate-600">
-                    Choose Font File
-                    <input 
-                      type="file" 
-                      accept=".ttf,.otf" 
-                      onChange={handleFontUpload} 
-                      className="hidden" 
-                    />
-                  </label>
-                  <span className="text-sm text-yellow-400 font-mono truncate max-w-[200px]">
-                    {settings.custom_font_name || 'No custom font uploaded'}
-                  </span>
+              <div className="p-4 bg-slate-950/40 rounded-xl border border-dashed border-slate-700 mt-4">
+                <label className="block text-sm font-semibold text-slate-300 mb-2">Google Drive Font URL (.ttf / .otf)</label>
+                <div className="space-y-3">
+                  <input 
+                    type="url" 
+                    placeholder="https://drive.google.com/file/d/1128M.../view"
+                    onChange={handleFontUrlChange} 
+                    defaultValue={settings.custom_font_id ? `https://drive.google.com/file/d/${settings.custom_font_id}/view` : ""}
+                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all text-sm"
+                  />
+                  {settings.custom_font_id && (
+                     <p className="text-xs text-green-400">Drive ID extracted ({settings.custom_font_id}). It's ready to use as "Custom Font" in the dropdown.</p>
+                  )}
                 </div>
-                {settings.custom_font_id && (
-                   <p className="text-xs text-green-400 mt-2">Custom font is hosted on Google Drive and ready to use. Selecting "Custom Font" from the dropdown will apply it globally.</p>
-                )}
               </div>
             </div>
           </div>
