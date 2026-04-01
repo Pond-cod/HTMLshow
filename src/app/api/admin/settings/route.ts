@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { updateSiteSettings, getSiteSettings } from "@/lib/google/settings";
-import * as fs from 'fs';
-import * as path from 'path';
+import { revalidatePath } from "next/cache";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
@@ -17,9 +18,11 @@ export async function PUT(request: Request) {
     const body = await request.json();
     await updateSiteSettings(body);
     
+    // Clear the cache to instantly reflect changes
+    revalidatePath("/", "layout");
+    
     return NextResponse.json({ success: true, message: "Settings updated successfully." });
   } catch (error: any) {
-    fs.writeFileSync(path.join(process.cwd(), 'sheets-error.log'), error.message || String(error));
-    return NextResponse.json({ error: error.message || "Failed to update settings" }, { status: 500 });
+    return NextResponse.json({ error: error.message || String(error) }, { status: 500 });
   }
 }
