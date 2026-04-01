@@ -13,14 +13,10 @@ export async function GET() {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const success = await updateSiteSettings(body);
+    await updateSiteSettings(body);
     
-    if (success) {
-      return NextResponse.json({ success: true, message: "Settings updated successfully." });
-    } else {
-      return NextResponse.json({ error: "Failed to update settings in Google Sheets." }, { status: 500 });
-    }
+    return NextResponse.json({ success: true, message: "Settings updated successfully." });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Failed to update settings" }, { status: 500 });
   }
 }

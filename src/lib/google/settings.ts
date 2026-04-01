@@ -115,7 +115,7 @@ export const updateSiteSettings = async (updates: Partial<SiteSettings>): Promis
 
     // Merge updates
     Object.entries(updates).forEach(([k, v]) => {
-      settingsMap.set(k, v as string);
+      settingsMap.set(k, v !== undefined && v !== null ? String(v) : "");
     });
 
     const newValues: string[][] = [["Key", "Value"]];
@@ -126,15 +126,15 @@ export const updateSiteSettings = async (updates: Partial<SiteSettings>): Promis
     // Overwrite the entire range
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: `${SETTINGS_SHEET_NAME}!A1:B`,
-      valueInputOption: "USER_ENTERED",
+      range: `${SETTINGS_SHEET_NAME}!A1`,
+      valueInputOption: "RAW",
       requestBody: { values: newValues }
     });
 
     return true;
-  } catch (error) {
-    console.error("Failed to update settings:", error);
-    return false;
+  } catch (error: any) {
+    console.error("Failed to update settings:", error?.message);
+    throw new Error(error?.message || "Failed to update settings");
   }
 };
 

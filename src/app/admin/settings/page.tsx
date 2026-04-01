@@ -44,13 +44,16 @@ export default function SettingsPage() {
     toast.promise(promise, {
       loading: "Saving global settings to Google Sheets...",
       success: async (res) => {
-        if (!res.ok) throw new Error("Failed to save");
+        if (!res.ok) {
+          const err = await res.json().catch(()=>({}));
+          throw new Error(err.error || "Failed to save");
+        }
         setIsSaving(false);
         return "Global Settings saved successfully!";
       },
-      error: () => {
+      error: (err: any) => {
         setIsSaving(false);
-        return "Failed to save settings.";
+        return err.message || "Failed to save settings.";
       }
     });
   };
