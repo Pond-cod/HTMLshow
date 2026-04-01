@@ -11,6 +11,9 @@ export interface SiteSettings {
   hero_badge: string;
   facebook_url: string;
   contact_email: string;
+  cta_text: string;
+  cta_size: string;
+  cta_color: string;
   [key: string]: string;
 }
 
@@ -22,6 +25,9 @@ const defaultSettings: SiteSettings = {
   hero_badge: "Technology Powerhouse",
   facebook_url: "https://facebook.com",
   contact_email: "contact@deedeviot.com",
+  cta_text: "คลิกเลือกดูผลงานผลงานได้เลย",
+  cta_size: "18",
+  cta_color: "#ef4444",
   site_views: "0"
 };
 

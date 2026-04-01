@@ -312,7 +312,7 @@ export const updateHtmlContent = async (projectId: string, content: string): Pro
       await sheets.spreadsheets.values.append({
         spreadsheetId,
         range: `${sheetName}!A:C`,
-        valueInputOption: "USER_ENTERED",
+        valueInputOption: "RAW",
         requestBody: { values: [[projectId, content, timestamp]] },
       });
     } else {
@@ -321,7 +321,7 @@ export const updateHtmlContent = async (projectId: string, content: string): Pro
       await sheets.spreadsheets.values.update({
         spreadsheetId,
         range: `${sheetName}!A${sheetRow}:C${sheetRow}`,
-        valueInputOption: "USER_ENTERED",
+        valueInputOption: "RAW",
         requestBody: { values: [[projectId, content, timestamp]] },
       });
     }

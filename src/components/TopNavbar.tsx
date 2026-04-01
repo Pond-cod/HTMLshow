@@ -45,8 +45,9 @@ export default function TopNavbar({ settings }: { settings: any }) {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
             </span>
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Views</span>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-2">คนเข้าดูผล</span>
             <span className="text-sm font-black text-yellow-400 tracking-wider bg-slate-950/50 px-2 py-0.5 rounded-md border border-slate-800">{viewCount}</span>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest pr-2">คน</span>
           </div>
 
           {/* Desktop Links */}
@@ -91,8 +92,8 @@ export default function TopNavbar({ settings }: { settings: any }) {
         <div className="px-4 py-6 space-y-4 shadow-2xl">
           <div className="flex items-center gap-3 px-4 py-3 bg-slate-950/50 rounded-xl border border-slate-800/80 mb-4">
             <Eye className="w-5 h-5 text-yellow-400" />
-            <span className="text-slate-300 font-semibold font-sm">Total Views :</span>
-            <span className="text-yellow-400 font-bold ml-auto">{viewCount}</span>
+            <span className="text-slate-300 font-semibold text-sm">คนเข้าดูผล :</span>
+            <span className="text-yellow-400 font-bold ml-auto">{viewCount} คน</span>
           </div>
           <Link 
             href="/" 

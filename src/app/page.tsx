@@ -44,6 +44,32 @@ export default async function Home() {
           )}
         </header>
 
+        {settings.cta_text && (
+          <div className="text-center z-10 mb-12 lg:mb-16">
+            <style suppressHydrationWarning>{`
+              @keyframes ctaColorSwitch {
+                0%, 100% { 
+                  color: ${settings.cta_color || '#ef4444'}; 
+                  text-shadow: 0 0 15px ${settings.cta_color || '#ef4444'}60; 
+                }
+                50% { 
+                  color: #fbbf24; 
+                  text-shadow: 0 0 25px rgba(251, 191, 36, 0.8); 
+                }
+              }
+              .cta-animated-text {
+                animation: ctaColorSwitch 2.5s infinite ease-in-out;
+              }
+            `}</style>
+            <p 
+              className="cta-animated-text font-bold tracking-wider px-4"
+              style={{ fontSize: `${settings.cta_size || '18'}px` }}
+            >
+              {settings.cta_text}
+            </p>
+          </div>
+        )}
+
         <div className="w-full max-w-7xl mx-auto z-10">
           <ProjectGrid projects={projects} />
         </div>

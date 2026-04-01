@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFileContent } from "@/lib/google/drive";
+import { getHtmlContentById } from "@/lib/google/sheets";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -10,10 +11,27 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const htmlContent = await getFileContent(id);
+    // Try to fetch HTML from Google Sheets first
+    let htmlContent = await getHtmlContentById(id);
     
+    // Fallback to Google Drive if not found in sheets
     if (!htmlContent) {
-      return new NextResponse("File not found or empty", { status: 404 });
+      console.log(`Proxy HTML for ${id} not found in Sheets, falling back to Drive`);
+      try {
+        htmlContent = await getFileContent(id);
+      } catch (driveError: any) {
+        console.warn(`Drive fallback failed for ${id}: ${driveError.message}`);
+        htmlContent = null;
+      }
+    }
+
+    if (!htmlContent) {
+      return new NextResponse(`
+        <div style="font-family: sans-serif; padding: 40px; text-align: center; color: #888;">
+          <h2>Content Not Found</h2>
+          <p>The HTML for this project is missing or could not be loaded.</p>
+        </div>
+      `, { status: 404, headers: { "Content-Type": "text/html; charset=utf-8" } });
     }
 
     return new NextResponse(htmlContent, {
@@ -26,6 +44,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error: any) {
-    return new NextResponse(`Error fetching HTML content from Drive: ${error.message || ''}`, { status: 500 });
+    return new NextResponse(`Error fetching HTML content: ${error.message || ''}`, { status: 500 });
   }
 }
