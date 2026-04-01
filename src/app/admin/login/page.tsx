@@ -24,7 +24,7 @@ export default function LoginPage() {
       });
 
       if (res.ok) {
-        router.push("/admin");
+        router.push("/admin/projects");
         router.refresh();
       } else {
         const data = await res.json();

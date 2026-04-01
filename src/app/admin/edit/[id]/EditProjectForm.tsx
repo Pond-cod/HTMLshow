@@ -140,7 +140,7 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
       }
 
       if (sheetRes.ok) {
-        router.push("/admin");
+        router.push("/admin/projects");
         router.refresh();
       } else {
         const errObj = await sheetRes.json().catch(() => ({}));
