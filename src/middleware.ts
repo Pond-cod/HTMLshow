@@ -37,16 +37,19 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/admin/login', request.url));
     }
 
-    // Role-based access control
-    if (path.startsWith('/admin/settings') && userRole !== 'admin') {
-      return NextResponse.redirect(new URL('/admin/projects', request.url));
+    // Restricted to admin only
+    if (path.startsWith('/admin/users') || path.startsWith('/api/admin/users')) {
+      if (userRole !== 'admin') {
+        return NextResponse.redirect(new URL('/admin/projects', request.url));
+      }
     }
 
-    if (path.startsWith('/api/admin/settings') && userRole !== 'admin' && request.method !== 'GET') {
-      return new NextResponse(
-        JSON.stringify({ success: false, message: 'Forbidden: Admins only' }),
-        { status: 403, headers: { 'content-type': 'application/json' } }
-      );
+    // Role-based access for settings (admin, approver, adminuser can view/interact)
+    const staffRoutes = ['/admin/settings', '/api/admin/settings'];
+    if (staffRoutes.some(r => path.startsWith(r))) {
+       if (!['admin', 'approver', 'adminuser'].includes(userRole)) {
+          return NextResponse.redirect(new URL('/admin/projects', request.url));
+       }
     }
   }
 
