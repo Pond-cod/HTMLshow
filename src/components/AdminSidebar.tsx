@@ -1,18 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Home, Settings2, Menu, X } from "lucide-react";
+import { LayoutDashboard, Home, Settings2, Menu, X, Users } from "lucide-react";
 import LogoutButton from "@/app/admin/LogoutButton";
 
 export default function AdminSidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/me")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setUserRole(data.role);
+        }
+      });
+  }, []);
 
   const navLinks = [
-    { name: "Projects", href: "/admin", icon: <LayoutDashboard size={20} /> },
-    { name: "Global Config", href: "/admin/settings", icon: <Settings2 size={20} /> },
+    { name: "Projects", href: "/admin", icon: <LayoutDashboard size={20} />, show: true },
+    { name: "Global Config", href: "/admin/settings", icon: <Settings2 size={20} />, show: userRole === 'admin' },
+    { name: "User Management", href: "/admin/users", icon: <Users size={20} />, show: userRole === 'admin' },
   ];
 
   return (
@@ -50,7 +62,7 @@ export default function AdminSidebar() {
         <div className="flex flex-col flex-1">
           <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3 px-2">Manage</p>
           <nav className="space-y-2 mb-8 relative">
-            {navLinks.map((link) => {
+            {navLinks.filter(link => link.show).map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link 

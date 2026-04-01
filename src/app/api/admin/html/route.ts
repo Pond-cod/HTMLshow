@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFileContent, updateFileContent } from "@/lib/google/drive";
 import { getHtmlContentById, updateHtmlContent } from "@/lib/google/sheets";
+import { getSession } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -41,7 +42,10 @@ export async function PUT(request: NextRequest) {
     }
 
     // Always update to Google Sheets now
-    const ok = await updateHtmlContent(id, content);
+    const session = await getSession();
+    const role = (session?.role as string) || "adminuser";
+    
+    const ok = await updateHtmlContent(id, content, role);
     return NextResponse.json({ success: ok });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: `Error updating HTML: ${error.message}` }, { status: 500 });

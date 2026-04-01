@@ -6,5 +6,5 @@ export interface Project {
   thumbnail_url: string;
   html_drive_id: string;
   last_updated: string;
-  status: 'published' | 'draft';
+  status: 'published' | 'draft' | 'pending';
 }

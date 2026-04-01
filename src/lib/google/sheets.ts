@@ -1,5 +1,6 @@
 import { google } from "googleapis";
 import { Project } from "@/types/project";
+import { User, Role } from "@/types/user";
 import { v4 as uuidv4 } from "uuid";
 
 const SCOPES = [
@@ -68,7 +69,7 @@ export const getAllProjects = async (): Promise<Project[]> => {
       thumbnail_url: row[4] || "",
       html_drive_id: row[5] || "",
       last_updated: row[6] || "",
-      status: (row[7] as 'published' | 'draft') || "draft",
+      status: (row[7] as 'published' | 'draft' | 'pending') || "draft",
     }));
   } catch (error: any) {
     console.error("Error fetching projects from sheets:", error?.message);
@@ -94,12 +95,15 @@ export const getProjectById = async (id: string): Promise<Project | null> => {
   }
 };
 
-export const addProject = async (projectData: Partial<Project>): Promise<Project> => {
+export const addProject = async (projectData: Partial<Project>, userRole?: string): Promise<Project> => {
   const spreadsheetId = getSheetId();
   const sheets = getSheetsClient();
   
   const sheetName = await getFirstSheetName(sheets, spreadsheetId!);
   
+  // Rule: adminuser always creates pending
+  const status = userRole === 'adminuser' ? 'pending' : (projectData.status || "draft");
+
   const newProject: Project = {
     id: projectData.id || uuidv4(),
     title: projectData.title || "New Project",
@@ -108,7 +112,7 @@ export const addProject = async (projectData: Partial<Project>): Promise<Project
     thumbnail_url: projectData.thumbnail_url || "",
     html_drive_id: projectData.html_drive_id || "",
     last_updated: new Date().toISOString(),
-    status: projectData.status || "draft",
+    status: status as any,
   };
 
   const values = [
@@ -134,7 +138,7 @@ export const addProject = async (projectData: Partial<Project>): Promise<Project
   return newProject;
 };
 
-export const updateProject = async (id: string, updateData: Partial<Project>): Promise<boolean> => {
+export const updateProject = async (id: string, updateData: Partial<Project>, userRole?: string): Promise<boolean> => {
   const spreadsheetId = getSheetId();
   const sheets = getSheetsClient();
   
@@ -155,6 +159,12 @@ export const updateProject = async (id: string, updateData: Partial<Project>): P
   const sheetRow = rowIndex + 2;
   const existingRow = rows[rowIndex];
   
+  // Logic: if adminuser updates, reset to pending
+  let status = updateData.status !== undefined ? updateData.status : existingRow[7];
+  if (userRole === 'adminuser') {
+    status = 'pending';
+  }
+
   const updatedValues = [
     id,
     updateData.title !== undefined ? updateData.title : existingRow[1],
@@ -163,7 +173,7 @@ export const updateProject = async (id: string, updateData: Partial<Project>): P
     updateData.thumbnail_url !== undefined ? updateData.thumbnail_url : existingRow[4],
     updateData.html_drive_id !== undefined ? updateData.html_drive_id : existingRow[5],
     updateData.last_updated !== undefined ? updateData.last_updated : new Date().toISOString(),
-    updateData.status !== undefined ? updateData.status : existingRow[7],
+    status,
   ];
 
   await sheets.spreadsheets.values.update({
@@ -289,7 +299,7 @@ export const getHtmlContentById = async (projectId: string): Promise<string | nu
   }
 };
 
-export const updateHtmlContent = async (projectId: string, content: string): Promise<boolean> => {
+export const updateHtmlContent = async (projectId: string, content: string, userRole?: string): Promise<boolean> => {
   const spreadsheetId = getSheetId();
   if (!spreadsheetId) return false;
 
@@ -306,6 +316,11 @@ export const updateHtmlContent = async (projectId: string, content: string): Pro
     const rows = response.data.values || [];
     const rowIndex = rows.findIndex(row => row[0] === projectId);
     const timestamp = new Date().toISOString();
+
+    // If adminuser, also update the main project status to pending
+    if (userRole === 'adminuser') {
+      await updateProject(projectId, { status: 'pending' }, userRole);
+    }
     
     if (rowIndex === -1) {
       // Append new row
@@ -332,3 +347,178 @@ export const updateHtmlContent = async (projectId: string, content: string): Pro
     return false;
   }
 };
+
+// --- Users Management ---
+
+const USERS_SHEET_NAME = "Users";
+
+const ensureUsersSheetExists = async (sheets: any, spreadsheetId: string) => {
+  const response = await sheets.spreadsheets.get({
+    spreadsheetId,
+    includeGridData: false,
+  });
+  
+  const existingSheets = response.data.sheets || [];
+  const exists = existingSheets.some((s: any) => s.properties.title === USERS_SHEET_NAME);
+  
+  if (!exists) {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          {
+            addSheet: {
+              properties: {
+                title: USERS_SHEET_NAME,
+              }
+            }
+          }
+        ]
+      }
+    });
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${USERS_SHEET_NAME}!A1:C1`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: { values: [["username", "password", "role"]] },
+    });
+
+    // Seed initial admin user based on environment variables if present
+    const seedAdmin = process.env.ADMIN_USERNAME || "admin";
+    const seedPass = process.env.ADMIN_PASSWORD || "123456";
+    await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: `${USERS_SHEET_NAME}!A:C`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: { values: [[seedAdmin, seedPass, "admin"]] },
+    });
+  }
+  return USERS_SHEET_NAME;
+};
+
+export const getAllUsers = async (): Promise<User[]> => {
+  const spreadsheetId = getSheetId();
+  if (!spreadsheetId) return [];
+
+  const sheets = getSheetsClient();
+  try {
+    const sheetName = await ensureUsersSheetExists(sheets, spreadsheetId);
+    const range = `${sheetName}!A2:C`;
+
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range,
+    });
+
+    const rows = response.data.values || [];
+    return rows.map((row) => ({
+      id: row[0] || "",
+      username: row[0] || "",
+      password: row[1] || "",
+      role: (row[2] as Role) || "adminuser"
+    }));
+  } catch (error: any) {
+    console.error("Error fetching users from sheet:", error?.message);
+    return [];
+  }
+};
+
+export const addUser = async (userData: User): Promise<boolean> => {
+  const spreadsheetId = getSheetId();
+  const sheets = getSheetsClient();
+  try {
+    const sheetName = await ensureUsersSheetExists(sheets, spreadsheetId!);
+    await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: `${sheetName}!A:C`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: { values: [[userData.username, userData.password, userData.role]] },
+    });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export const deleteUser = async (username: string): Promise<boolean> => {
+   const spreadsheetId = getSheetId();
+   const sheets = getSheetsClient();
+   
+   try {
+     const sheetName = await ensureUsersSheetExists(sheets, spreadsheetId!);
+     const response = await sheets.spreadsheets.get({
+       spreadsheetId, includeGridData: false
+     });
+     
+     const sheetList = response.data.sheets || [];
+     const sheetInfo = sheetList.find((s: any) => s.properties.title === sheetName);
+     if (!sheetInfo) return false;
+     
+     const sheetId = sheetInfo?.properties?.sheetId;
+     
+     const valuesResponse = await sheets.spreadsheets.values.get({
+       spreadsheetId, range: `${sheetName}!A2:C`,
+     });
+     
+     const rows = valuesResponse.data.values || [];
+     const rowIndex = rows.findIndex(row => row[0] === username);
+     
+     if (rowIndex === -1 || sheetId === undefined) return false;
+     
+     const sheetRow = rowIndex + 1; // skip header
+     
+     await sheets.spreadsheets.batchUpdate({
+       spreadsheetId,
+       requestBody: {
+         requests: [
+           {
+             deleteDimension: {
+               range: {
+                 sheetId,
+                 dimension: "ROWS",
+                 startIndex: sheetRow,
+                 endIndex: sheetRow + 1
+               }
+             }
+           }
+         ]
+       }
+     });
+     return true;
+   } catch {
+     return false;
+   }
+};
+
+export const updateUser = async (oldUsername: string, newData: { username: string, password?: string, role: Role }): Promise<boolean> => {
+  const spreadsheetId = getSheetId();
+  const sheets = getSheetsClient();
+  try {
+    const sheetName = await ensureUsersSheetExists(sheets, spreadsheetId!);
+    const valuesResponse = await sheets.spreadsheets.values.get({
+      spreadsheetId, range: `${sheetName}!A2:C`,
+    });
+    const rows = valuesResponse.data.values || [];
+    const rowIndex = rows.findIndex(row => row[0] === oldUsername);
+    if (rowIndex === -1) return false;
+
+    const sheetRow = rowIndex + 2; 
+    const pass = newData.password !== undefined && newData.password !== "" ? newData.password : rows[rowIndex][1];
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${sheetName}!A${sheetRow}:C${sheetRow}`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: { values: [[newData.username, pass, newData.role]] },
+    });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export const updateUserRole = async (username: string, newRole: Role, newPassword?: string): Promise<boolean> => {
+  return updateUser(username, { username, role: newRole, password: newPassword });
+};
+

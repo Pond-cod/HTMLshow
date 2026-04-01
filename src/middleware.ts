@@ -15,11 +15,13 @@ export async function middleware(request: NextRequest) {
     
     const session = request.cookies.get("session")?.value;
     let isValid = false;
+    let userRole = '';
     
     if (session) {
       try {
-        await decrypt(session);
+        const payload = await decrypt(session);
         isValid = true;
+        userRole = payload.role as string;
       } catch (e: any) {
         console.error("Session decryption failed:", e.message);
       }
@@ -33,6 +35,18 @@ export async function middleware(request: NextRequest) {
         );
       }
       return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
+
+    // Role-based access control
+    if (path.startsWith('/admin/settings') && userRole !== 'admin') {
+      return NextResponse.redirect(new URL('/admin/projects', request.url));
+    }
+
+    if (path.startsWith('/api/admin/settings') && userRole !== 'admin' && request.method !== 'GET') {
+      return new NextResponse(
+        JSON.stringify({ success: false, message: 'Forbidden: Admins only' }),
+        { status: 403, headers: { 'content-type': 'application/json' } }
+      );
     }
   }
 

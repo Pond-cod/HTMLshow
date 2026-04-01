@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Editor from "@monaco-editor/react";
-import { Save, UploadCloud, Loader2, Link as LinkIcon } from "lucide-react";
+import { Save, UploadCloud, Loader2, Link as LinkIcon, Clock } from "lucide-react";
 
 export default function EditProjectForm({ initialProject }: { initialProject: any }) {
   const router = useRouter();
@@ -21,6 +21,17 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingField, setUploadingField] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"editor" | "preview">("editor");
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/me")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setUserRole(data.role);
+        }
+      });
+  }, []);
 
   useEffect(() => {
     const fetchHtml = async () => {
@@ -142,6 +153,8 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
     }
   };
 
+  const isAdminUser = userRole === 'adminuser';
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center mb-10">
@@ -157,7 +170,7 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
           className="bg-yellow-400 hover:bg-yellow-500 text-slate-950 px-6 py-3 rounded-2xl font-bold shadow-[0_0_20px_rgba(250,204,21,0.4)] flex items-center gap-2 transition-all hover:scale-105 disabled:opacity-50"
         >
           {isSaving ? <Loader2 className="animate-spin w-5 h-5" /> : <Save className="w-5 h-5 stroke-[3px]" />}
-          {isSaving ? "Saving..." : "Save Project"}
+          {isSaving ? "Saving..." : isAdminUser ? "Submit for Review" : "Save Project"}
         </button>
       </div>
 
@@ -179,18 +192,27 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
               />
             </div>
             
-            <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-2">Status</label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all appearance-none cursor-pointer"
-              >
-                <option value="draft">Draft</option>
-                <option value="published">Published</option>
-              </select>
-            </div>
+            {!isAdminUser ? (
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">Status</label>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all appearance-none cursor-pointer"
+                >
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="pending">Pending Approval</option>
+                </select>
+              </div>
+            ) : (
+              <div className="p-4 bg-yellow-400/10 border border-yellow-400/20 rounded-xl">
+                 <p className="text-sm text-yellow-500 font-medium flex items-center gap-2">
+                    <Clock size={16} /> Status will be set to Pending Approval
+                 </p>
+              </div>
+            )}
           </div>
 
           {/* Media Links Card */}

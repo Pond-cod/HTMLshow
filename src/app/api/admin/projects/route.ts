@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addProject, updateProject, deleteProject } from "@/lib/google/sheets";
+import { getSession } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getSession();
+    const role = (session?.role as string) || "adminuser";
+    
     const data = await request.json();
-    const newProject = await addProject(data);
+    const newProject = await addProject(data, role);
     return NextResponse.json({ success: true, project: newProject });
   } catch (error: any) {
     console.error("Error creating project:", error);
@@ -17,11 +21,14 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const session = await getSession();
+    const role = (session?.role as string) || "adminuser";
+
     const { id, ...data } = await request.json();
     if (!id) {
       return NextResponse.json({ success: false, message: "Missing ID" }, { status: 400 });
     }
-    const ok = await updateProject(id, data);
+    const ok = await updateProject(id, data, role);
     return NextResponse.json({ success: ok });
   } catch (error) {
     console.error("Error updating project:", error);

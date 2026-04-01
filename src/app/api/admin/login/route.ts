@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { setLoginSession } from "@/lib/auth";
+import { getAllUsers } from "@/lib/google/sheets";
 
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
     
-    if (
-      username === process.env.ADMIN_USERNAME &&
-      password === process.env.ADMIN_PASSWORD
-    ) {
-      await setLoginSession();
-      return NextResponse.json({ success: true });
+    // Auto-create initial sheet or fetch existing users
+    const users = await getAllUsers();
+    const user = users.find(u => u.username === username && u.password === password);
+
+    if (user) {
+      await setLoginSession(user);
+      return NextResponse.json({ success: true, role: user.role });
     }
     
     return NextResponse.json(

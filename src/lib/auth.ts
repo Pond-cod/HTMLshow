@@ -1,6 +1,7 @@
 import { SignJWT, jwtVerify, JWTPayload } from "jose";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { User, Role } from "@/types/user";
 
 const secretKey = process.env.JWT_SECRET || "super_secret_for_local_development";
 const key = new TextEncoder().encode(secretKey);
@@ -53,9 +54,9 @@ export async function updateSession(request: NextRequest) {
   }
 }
 
-export async function setLoginSession() {
+export async function setLoginSession(user: User) {
   const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  const session = await encrypt({ user: "admin", expires: expires.getTime() });
+  const session = await encrypt({ user: user.username, role: user.role, expires: expires.getTime() });
   cookies().set("session", session, { expires, httpOnly: true, sameSite: "lax" });
 }
 
