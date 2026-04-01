@@ -2,6 +2,7 @@ import { getAuthClient, getSheetsClient } from "./sheets";
 
 const getSheetId = () => process.env.GOOGLE_SHEET_ID;
 const SETTINGS_SHEET_NAME = "Settings";
+const PENDING_SETTINGS_SHEET_NAME = "PendingSettings";
 
 export interface SiteSettings {
   hero_title: string;
@@ -197,3 +198,134 @@ export const incrementSiteViews = async (): Promise<string> => {
     return "0";
   }
 };
+
+const ensurePendingSettingsSheetExists = async (sheets: any, spreadsheetId: string) => {
+  const response = await sheets.spreadsheets.get({ spreadsheetId });
+  const sheetList = response.data.sheets || [];
+  const sheetExists = sheetList.some((s: any) => s.properties?.title === PENDING_SETTINGS_SHEET_NAME);
+
+  if (!sheetExists) {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [{ addSheet: { properties: { title: PENDING_SETTINGS_SHEET_NAME } } }]
+      }
+    });
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${PENDING_SETTINGS_SHEET_NAME}!A1:D1`,
+      valueInputOption: "RAW",
+      requestBody: { values: [["Key", "Value", "Timestamp", "RequestedBy"]] }
+    });
+  }
+};
+
+export const createPendingSettings = async (updates: Partial<SiteSettings>, requestedBy: string): Promise<boolean> => {
+  const spreadsheetId = getSheetId();
+  if (!spreadsheetId) return false;
+
+  const sheets = getSheetsClient();
+  try {
+    await ensurePendingSettingsSheetExists(sheets, spreadsheetId);
+    const timestamp = new Date().toISOString();
+    
+    // Convert updates map to rows for the pending sheet
+    const rows = Object.entries(updates).map(([k, v]) => [k, String(v), timestamp, requestedBy]);
+
+    await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: `${PENDING_SETTINGS_SHEET_NAME}!A:D`,
+      valueInputOption: "RAW",
+      requestBody: { values: rows }
+    });
+
+    return true;
+  } catch (error: any) {
+    console.error("Failed to create pending settings:", error?.message);
+    return false;
+  }
+};
+
+export const getPendingSettings = async (): Promise<{ updates: Partial<SiteSettings>, timestamp: string, requestedBy: string } | null> => {
+  const spreadsheetId = getSheetId();
+  if (!spreadsheetId) return null;
+
+  const sheets = getSheetsClient();
+  try {
+    await ensurePendingSettingsSheetExists(sheets, spreadsheetId);
+    
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: `${PENDING_SETTINGS_SHEET_NAME}!A2:D`,
+    });
+
+    const rows = response.data.values || [];
+    if (rows.length === 0) return null;
+
+    // Use a map to consolidate the latest requested value for each key
+    const updates: any = {};
+    let latestTimestamp = "";
+    let lastRequestedBy = "";
+
+    rows.forEach(row => {
+      if (row[0]) {
+        updates[row[0]] = row[1];
+        latestTimestamp = row[2] || latestTimestamp;
+        lastRequestedBy = row[3] || lastRequestedBy;
+      }
+    });
+
+    return { updates, timestamp: latestTimestamp, requestedBy: lastRequestedBy };
+  } catch (error) {
+    return null;
+  }
+};
+
+export const approveSettings = async (): Promise<boolean> => {
+  const spreadsheetId = getSheetId();
+  if (!spreadsheetId) return false;
+
+  const pending = await getPendingSettings();
+  if (!pending) return false;
+
+  const success = await updateSiteSettings(pending.updates);
+  if (success) {
+    await rejectSettings(); // Clear the sheet
+  }
+  return success;
+};
+
+export const rejectSettings = async (): Promise<boolean> => {
+  const spreadsheetId = getSheetId();
+  if (!spreadsheetId) return false;
+
+  const sheets = getSheetsClient();
+  try {
+    const response = await sheets.spreadsheets.get({ spreadsheetId });
+    const sheetList = response.data.sheets || [];
+    const sheet = sheetList.find((s: any) => s.properties?.title === PENDING_SETTINGS_SHEET_NAME);
+    if (!sheet) return true;
+
+    const sheetId = sheet.properties?.sheetId;
+    if (sheetId === undefined) return false;
+
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          {
+            updateCells: {
+              range: { sheetId, startRowIndex: 1 },
+              fields: "userEnteredValue"
+            }
+          }
+        ]
+      }
+    });
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+

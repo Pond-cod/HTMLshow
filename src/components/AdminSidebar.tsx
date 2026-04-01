@@ -23,7 +23,7 @@ export default function AdminSidebar() {
 
   const navLinks = [
     { name: "Projects", href: "/admin", icon: <LayoutDashboard size={20} />, show: true },
-    { name: "Global Config", href: "/admin/settings", icon: <Settings2 size={20} />, show: userRole === 'admin' },
+    { name: "Global Config", href: "/admin/settings", icon: <Settings2 size={20} />, show: !!userRole },
     { name: "User Management", href: "/admin/users", icon: <Users size={20} />, show: userRole === 'admin' },
   ];
 

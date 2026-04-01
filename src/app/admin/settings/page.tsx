@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Save, Settings2 } from "lucide-react";
+import { Save, Settings2, Shield, AlertCircle, Clock, CheckCircle2, XCircle } from "lucide-react";
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<any>({
@@ -18,16 +18,42 @@ export default function SettingsPage() {
     cta_color: "#ef4444",
     site_font: "inter"
   });
+  const [pendingChanges, setPendingChanges] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isProcessingApproval, setIsProcessingApproval] = useState(false);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch role
+      const meRes = await fetch("/api/admin/me");
+      const meData = await meRes.json();
+      if (meData.success) setUserRole(meData.role);
+
+      // Fetch settings
+      const settingsRes = await fetch("/api/admin/settings");
+      const settingsData = await settingsRes.json();
+      setSettings(settingsData);
+
+      // Fetch pending if admin/approver
+      if (['admin', 'approver'].includes(meData.role)) {
+        const pendingRes = await fetch("/api/admin/settings?action=pending");
+        const pendingData = await pendingRes.json();
+        if (pendingData.updates) {
+          setPendingChanges(pendingData);
+        }
+      }
+    } catch (err) {
+      toast.error("Failed to load data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetch("/api/admin/settings")
-      .then(res => res.json())
-      .then(data => {
-        setSettings(data);
-        setIsLoading(false);
-      });
+    fetchData();
   }, []);
 
   const handleFontUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,30 +83,62 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    const savePromise = fetch("/api/admin/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(settings)
-    }).then(async (res) => {
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to update settings in server");
-      }
-      return data;
-    });
-
-    toast.promise(savePromise, {
-      loading: "Saving global settings to Google Sheets...",
-      success: "Global Settings saved successfully!",
-      error: (err: any) => {
-        return err.message || "Failed to save settings.";
-      }
-    });
-
     try {
-      await savePromise;
+      const res = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings)
+      });
+      const data = await res.json();
+      
+      if (res.ok) {
+        toast.success(data.message);
+        if (data.pending) {
+          // If was adminuser, maybe refresh or just show success
+        }
+      } else {
+        toast.error(data.error || "Failed to save settings");
+      }
+    } catch (e: any) {
+      toast.error("Error saving settings");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleApprove = async () => {
+    setIsProcessingApproval(true);
+    try {
+      const res = await fetch("/api/admin/settings?action=approve", { method: "POST" });
+      if (res.ok) {
+        toast.success("Settings approved!");
+        setPendingChanges(null);
+        fetchData(); // Refresh to get the live settings
+      } else {
+        toast.error("Failed to approve settings");
+      }
+    } catch (err) {
+      toast.error("Error approving settings");
+    } finally {
+      setIsProcessingApproval(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!confirm("Are you sure you want to reject these changes?")) return;
+    setIsProcessingApproval(true);
+    try {
+      const res = await fetch("/api/admin/settings?action=reject", { method: "POST" });
+      if (res.ok) {
+        toast.success("Settings rejected");
+        setPendingChanges(null);
+      } else {
+        toast.error("Failed to reject settings");
+      }
+    } catch (err) {
+      toast.error("Error rejecting settings");
+    } finally {
+      setIsProcessingApproval(false);
     }
   };
 
@@ -92,8 +150,54 @@ export default function SettingsPage() {
     );
   }
 
+  const isAdminUser = userRole === 'adminuser';
+  const canApprove = ['admin', 'approver'].includes(userRole || '');
+
   return (
-    <div className="animate-in fade-in duration-500">
+    <div className="animate-in fade-in duration-500 space-y-8">
+      {/* Pending Banner for Admin/Approver */}
+      {canApprove && pendingChanges && (
+        <div className="bg-yellow-400/10 border border-yellow-400/20 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl backdrop-blur-xl">
+          <div className="flex items-center gap-4 text-left">
+            <div className="w-12 h-12 bg-yellow-400/20 rounded-2xl flex items-center justify-center text-yellow-400">
+              <Clock size={24} />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">Pending Changes Detected</h3>
+              <p className="text-slate-400 text-sm">
+                Requested by <span className="text-yellow-400 font-bold">@{pendingChanges.requestedBy}</span> on {new Date(pendingChanges.timestamp).toLocaleString()}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <button 
+              onClick={handleApprove}
+              disabled={isProcessingApproval}
+              className="flex-1 md:flex-none bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all"
+            >
+              <CheckCircle2 size={18} /> Approve
+            </button>
+            <button 
+              onClick={handleReject}
+              disabled={isProcessingApproval}
+              className="flex-1 md:flex-none bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all"
+            >
+              <XCircle size={18} /> Reject
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Intro Banner for AdminUser */}
+      {isAdminUser && (
+        <div className="bg-slate-900/50 border border-slate-800 rounded-3xl p-6 flex items-center gap-4 backdrop-blur-xl">
+           <AlertCircle className="text-yellow-400 shrink-0" size={24} />
+           <p className="text-slate-300 text-sm">
+             You are editing in <strong>Draft Mode</strong>. Any changes you save will be submitted to the <span className="text-yellow-400">Admin</span> for approval before they appear live on the website.
+           </p>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-4xl font-extrabold text-white tracking-tight">Global Config</h1>
@@ -105,7 +209,7 @@ export default function SettingsPage() {
           className="bg-yellow-400 hover:bg-yellow-500 disabled:opacity-50 text-slate-950 px-6 py-3 rounded-2xl font-bold shadow-[0_0_20px_rgba(250,204,21,0.4)] flex items-center gap-2 transition-all hover:scale-105"
         >
           <Save size={20} strokeWidth={3} />
-          {isSaving ? "Saving..." : "Save Settings"}
+          {isSaving ? "Saving..." : isAdminUser ? "Submit for Review" : "Save Settings"}
         </button>
       </div>
 
@@ -284,7 +388,7 @@ export default function SettingsPage() {
                     className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all text-sm"
                   />
                   {settings.custom_font_id && (
-                     <p className="text-xs text-green-400">Drive ID extracted ({settings.custom_font_id}). It's ready to use as "Custom Font" in the dropdown.</p>
+                    <p className="text-xs text-green-400">Drive ID extracted ({settings.custom_font_id}). It's ready to use as "Custom Font" in the dropdown.</p>
                   )}
                 </div>
               </div>
@@ -328,3 +432,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+
