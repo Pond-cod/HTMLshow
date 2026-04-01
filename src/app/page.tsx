@@ -34,7 +34,7 @@ export default async function Home() {
               fontSize: settings.hero_title_size ? `clamp(2.5rem, 8vw, ${settings.hero_title_size}px)` : undefined,
               color: settings.hero_title_color || undefined
             }}
-            dangerouslySetInnerHTML={{ __html: settings.hero_title }}
+            dangerouslySetInnerHTML={{ __html: settings.hero_title || 'Default Title' }}
           />
           
           {settings.hero_subtitle && (

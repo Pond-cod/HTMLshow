@@ -75,8 +75,8 @@ export const getSiteSettings = async (): Promise<SiteSettings> => {
     const settings: any = { ...defaultSettings };
     
     rows.forEach(row => {
-      if (row[0] && row[1] !== undefined) {
-        settings[row[0]] = row[1];
+      if (row[0]) {
+        settings[row[0]] = row[1] || "";
       }
     });
 

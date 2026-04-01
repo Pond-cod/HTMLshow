@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, X, ExternalLink } from "lucide-react";
+import Image from "next/image";
 
 interface Project {
   id: string;
@@ -68,17 +69,21 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
           {/* Glowing yellow shadow behind the card on hover */}
           <div className="absolute -inset-0.5 bg-yellow-400 rounded-3xl blur opacity-0 group-hover:opacity-30 transition duration-700"></div>
           
-          <button 
+          <div 
             onClick={() => setSelectedProject(project)}
-            className="w-full text-left relative flex flex-col h-full overflow-hidden rounded-3xl bg-slate-900/80 backdrop-blur-md border border-slate-800/80 transition-all duration-500 group-hover:border-yellow-400/50"
+            onKeyDown={(e) => e.key === 'Enter' && setSelectedProject(project)}
+            role="button"
+            tabIndex={0}
+            className="w-full text-left relative flex flex-col h-full overflow-hidden rounded-3xl bg-slate-900/80 backdrop-blur-md border border-slate-800/80 transition-all duration-500 group-hover:border-yellow-400/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-yellow-400/50"
           >
             <div className="aspect-[16/10] w-full relative overflow-hidden bg-slate-950">
               {project.thumbnail_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={cleanImageUrl(project.thumbnail_url)}
                   alt={project.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-slate-700 font-medium bg-slate-950">
@@ -98,7 +103,7 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
                 <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
-          </button>
+          </div>
         </motion.div>
       ))}
       </div>

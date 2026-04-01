@@ -3,9 +3,13 @@ import { updateSession, decrypt } from "./lib/auth";
 
 export async function middleware(request: NextRequest) {
   const response = await updateSession(request);
+  const path = request.nextUrl.pathname;
 
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    if (request.nextUrl.pathname === '/admin/login') {
+  const isAdminRoute = path.startsWith('/admin');
+  const isAdminApiRoute = path.startsWith('/api/admin');
+
+  if (isAdminRoute || isAdminApiRoute) {
+    if (path === '/admin/login' || path === '/api/admin/login') {
       return response;
     }
     
@@ -16,33 +20,19 @@ export async function middleware(request: NextRequest) {
       try {
         await decrypt(session);
         isValid = true;
-      } catch (e) {}
+      } catch (e: any) {
+        console.error("Session decryption failed:", e.message);
+      }
     }
 
     if (!isValid) {
+      if (isAdminApiRoute) {
+        return new NextResponse(
+          JSON.stringify({ success: false, message: 'Unauthorized' }),
+          { status: 401, headers: { 'content-type': 'application/json' } }
+        );
+      }
       return NextResponse.redirect(new URL('/admin/login', request.url));
-    }
-  }
-
-  // Also protect admin API routes
-  if (request.nextUrl.pathname.startsWith('/api/admin')) {
-    if (request.nextUrl.pathname === '/api/admin/login') {
-      return response;
-    }
-    const session = request.cookies.get("session")?.value;
-    let isValid = false;
-    if (session) {
-      try {
-        await decrypt(session);
-        isValid = true;
-      } catch (e) {}
-    }
-
-    if (!isValid) {
-      return new NextResponse(
-        JSON.stringify({ success: false, message: 'Unauthorized' }),
-        { status: 401, headers: { 'content-type': 'application/json' } }
-      );
     }
   }
 
