@@ -4,7 +4,7 @@ import ProjectGrid from "./ProjectGrid";
 import TopNavbar from "@/components/TopNavbar";
 import { Sparkles } from "lucide-react";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60; // Revalidate every 60 seconds (ISR)
 
 export default async function Home() {
   const [projects, settings] = await Promise.all([

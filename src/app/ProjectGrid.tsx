@@ -139,7 +139,7 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
                 <div className="flex items-center gap-4">
                   {selectedProject.html_drive_id && (
                     <a 
-                      href={selectedProject.html_drive_id.startsWith('http') ? selectedProject.html_drive_id : `/api/proxy-html?id=${selectedProject.html_drive_id}`}
+                      href={`/project/${selectedProject.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="hidden sm:flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-yellow-400 rounded-xl font-medium transition-colors text-sm border border-slate-700"

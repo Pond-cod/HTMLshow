@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
         // Additional security headers since we are rendering generic HTML
         "Content-Security-Policy": "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;",
         "X-Content-Type-Options": "nosniff"

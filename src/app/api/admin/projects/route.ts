@@ -41,6 +41,12 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const session = await getSession();
+    const role = (session?.role as string) || "adminuser";
+    if (role === "adminuser") {
+      return NextResponse.json({ success: false, message: "Unauthorized to delete projects" }, { status: 403 });
+    }
+
     const { id } = await request.json();
     if (!id) {
       return NextResponse.json({ success: false, message: "Missing ID" }, { status: 400 });
