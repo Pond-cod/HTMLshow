@@ -139,7 +139,7 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
                 <div className="flex items-center gap-4">
                   {selectedProject.html_drive_id && (
                     <a 
-                      href={`/api/proxy-html?id=${selectedProject.html_drive_id}`}
+                      href={selectedProject.html_drive_id.startsWith('http') ? selectedProject.html_drive_id : `/api/proxy-html?id=${selectedProject.html_drive_id}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="hidden sm:flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-yellow-400 rounded-xl font-medium transition-colors text-sm border border-slate-700"
@@ -160,10 +160,10 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
               <div className="flex-1 bg-slate-950 relative w-full h-full overflow-hidden">
                 {selectedProject.html_drive_id ? (
                   <iframe
-                    src={`/api/proxy-html?id=${selectedProject.html_drive_id}`}
+                    src={selectedProject.html_drive_id.startsWith('http') ? selectedProject.html_drive_id : `/api/proxy-html?id=${selectedProject.html_drive_id}`}
                     title={selectedProject.title}
                     className="w-full h-full border-0 absolute inset-0 bg-white" // background white is generally safer for standard HTML renders
-                    sandbox="allow-scripts allow-same-origin"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-slate-500 bg-slate-950 p-8 text-center">

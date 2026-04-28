@@ -36,6 +36,10 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
   useEffect(() => {
     const fetchHtml = async () => {
       if (initialProject?.html_drive_id) {
+        if (initialProject.html_drive_id.startsWith('http')) {
+          setHtmlContent(`<!-- External URL detected: \n\n${initialProject.html_drive_id}\n\nCheck the Live Preview tab. -->`);
+          return;
+        }
         setIsLoadingHtml(true);
         try {
           const res = await fetch(`/api/admin/html?id=${initialProject.html_drive_id}`);
@@ -258,14 +262,16 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
                     value={formData.html_drive_id}
                     onChange={(e) => {
                       let val = e.target.value.trim();
-                      const match1 = val.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-                      if (match1 && match1[1]) val = match1[1];
-                      const match2 = val.match(/id=([a-zA-Z0-9_-]+)/);
-                      if (match2 && match2[1]) val = match2[1];
+                      if (val.includes('drive.google.com')) {
+                        const match1 = val.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+                        if (match1 && match1[1]) val = match1[1];
+                        const match2 = val.match(/id=([a-zA-Z0-9_-]+)/);
+                        if (match2 && match2[1]) val = match2[1];
+                      }
                       setFormData(prev => ({ ...prev, html_drive_id: val }));
                     }}
-                    placeholder="Paste full URL or ID here..."
-                    className="bg-transparent text-sm font-mono text-yellow-400 w-48 px-3 py-1.5 outline-none"
+                    placeholder="Paste URL, App Script, or ID here..."
+                    className="bg-transparent text-sm font-mono text-yellow-400 w-64 px-3 py-1.5 outline-none"
                   />
                 </div>
                 
@@ -273,6 +279,10 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
                   <button
                     type="button"
                     onClick={async () => {
+                      if (formData.html_drive_id.startsWith('http')) {
+                        setHtmlContent(`<!-- External URL detected: \n\n${formData.html_drive_id}\n\nCheck the Live Preview tab. -->`);
+                        return;
+                      }
                       setIsLoadingHtml(true);
                       try {
                         const res = await fetch(`/api/admin/html?id=${formData.html_drive_id}`);
@@ -325,8 +335,9 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
                 <iframe
                   title="Live Preview"
                   className="w-full h-full border-0 bg-white"
-                  srcDoc={htmlContent || "<div style='padding:40px;text-align:center;font-family:sans-serif;color:#888;'><h2>No HTML Source Available</h2><p>Upload a .html file or type some code in the Code tab to see the preview here!</p></div>"}
-                  sandbox="allow-scripts allow-same-origin"
+                  srcDoc={formData.html_drive_id.startsWith('http') ? undefined : (htmlContent || "<div style='padding:40px;text-align:center;font-family:sans-serif;color:#888;'><h2>No HTML Source Available</h2><p>Upload a .html file or type some code in the Code tab to see the preview here!</p></div>")}
+                  src={formData.html_drive_id.startsWith('http') ? formData.html_drive_id : undefined}
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
                 />
               )}
             </div>
