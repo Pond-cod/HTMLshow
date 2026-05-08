@@ -34,6 +34,12 @@ export async function GET(request: NextRequest) {
       `, { status: 404, headers: { "Content-Type": "text/html; charset=utf-8" } });
     }
 
+    // Detect if the htmlContent is just a raw URL (e.g. user pasted a link into the code editor)
+    const trimmedContent = htmlContent.trim();
+    if (/^https?:\/\/[^\s]+$/.test(trimmedContent)) {
+      return NextResponse.redirect(new URL(`/api/proxy-external?url=${encodeURIComponent(trimmedContent)}`, request.url));
+    }
+
     return new NextResponse(htmlContent, {
       status: 200,
       headers: {

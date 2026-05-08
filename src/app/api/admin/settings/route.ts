@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { 
   updateSiteSettings, 
   getSiteSettings, 
@@ -12,9 +12,8 @@ import { getSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const action = searchParams.get("action");
+export async function GET(request: NextRequest) {
+  const action = request.nextUrl.searchParams.get("action");
 
   try {
     if (action === "pending") {
@@ -29,9 +28,8 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const action = searchParams.get("action");
+export async function POST(request: NextRequest) {
+  const action = request.nextUrl.searchParams.get("action");
   const session = await getSession();
   
   if (!session || !['admin', 'approver'].includes(session.role as string)) {
