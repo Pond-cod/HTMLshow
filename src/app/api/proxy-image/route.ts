@@ -1,12 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import { getAuthClient } from '@/lib/google/sheets';
 
-export async function GET(request: Request) {
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: NextRequest) {
   let id: string | null = null;
   try {
-    const { searchParams } = new URL(request.url);
-    id = searchParams.get('id');
+    id = request.nextUrl.searchParams.get('id');
 
     if (!id) {
       return NextResponse.json({ error: 'Missing file ID' }, { status: 400 });
