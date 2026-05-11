@@ -160,10 +160,10 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
               <div className="flex-1 bg-slate-950 relative w-full h-full overflow-hidden">
                 {selectedProject.html_drive_id ? (
                   <iframe
-                    src={selectedProject.html_drive_id.startsWith('http') ? `/api/proxy-external?url=${encodeURIComponent(selectedProject.html_drive_id)}` : `/api/proxy-html?id=${selectedProject.html_drive_id}`}
+                    src={selectedProject.html_drive_id.startsWith('http') ? (selectedProject.html_drive_id.includes('script.google.com') ? selectedProject.html_drive_id : `/api/proxy-external?url=${encodeURIComponent(selectedProject.html_drive_id)}`) : `/api/proxy-html?id=${selectedProject.html_drive_id}`}
                     title={selectedProject.title}
                     className="w-full h-full border-0 absolute inset-0 bg-white" // background white is generally safer for standard HTML renders
-                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-top-navigation-by-user-activation"
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-slate-500 bg-slate-950 p-8 text-center">
