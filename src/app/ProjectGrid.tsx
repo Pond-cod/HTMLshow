@@ -82,6 +82,7 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
                   src={cleanImageUrl(project.thumbnail_url)}
                   alt={project.title}
                   fill
+                  priority={index < 6}
                   className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />

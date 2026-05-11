@@ -10,8 +10,19 @@ const sarabun = Sarabun({ subsets: ["thai", "latin"], weight: ["200", "300", "40
 const mitr = Mitr({ subsets: ["thai", "latin"], weight: ["200", "300", "400", "500", "600", "700"], variable: '--font-mitr' });
 
 export const metadata: Metadata = {
-  title: "HTML Showcase",
-  description: "Custom HTML CMS and Showcase Portal",
+  title: "HTML Showcase Portal",
+  description: "A fast, secure, and fully customizable HTML CMS and Showcase Portal.",
+  keywords: ["HTML", "CMS", "Showcase", "Portal", "Google Apps Script", "Web App"],
+  openGraph: {
+    title: "HTML Showcase Portal",
+    description: "A fast, secure, and fully customizable HTML CMS and Showcase Portal.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "HTML Showcase Portal",
+    description: "A fast, secure, and fully customizable HTML CMS and Showcase Portal.",
+  }
 };
 
 export default function RootLayout({
