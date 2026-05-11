@@ -35,7 +35,7 @@ export default async function ProjectPage({
       <main className="flex-1 mt-[73px] w-full">
         {project.html_drive_id ? (
           <iframe
-            src={project.html_drive_id.startsWith('http') ? (project.html_drive_id.includes('script.google.com') ? project.html_drive_id : `/api/proxy-external?url=${encodeURIComponent(project.html_drive_id)}`) : `/api/proxy-html?id=${project.html_drive_id}`}
+            src={project.html_drive_id.startsWith('http') ? project.html_drive_id : `/api/proxy-html?id=${project.html_drive_id}`}
             title={project.title}
             className="w-full h-[calc(100vh-73px)] border-0 bg-white"
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-top-navigation-by-user-activation"

@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     // Detect if the htmlContent is just a raw URL (e.g. user pasted a link into the code editor)
     const trimmedContent = htmlContent.trim();
     if (/^https?:\/\/[^\s]+$/.test(trimmedContent)) {
-      return NextResponse.redirect(new URL(`/api/proxy-external?url=${encodeURIComponent(trimmedContent)}`, request.url));
+      return NextResponse.redirect(new URL(trimmedContent));
     }
 
     return new NextResponse(htmlContent, {
