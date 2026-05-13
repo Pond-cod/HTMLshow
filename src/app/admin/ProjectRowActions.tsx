@@ -28,7 +28,10 @@ export default function ProjectRowActions({ project, userRole }: { project: any,
         router.refresh();
         return `Project status updated to ${newStatus}`;
       },
-      error: "Failed to update project status"
+      error: () => {
+        setIsUpdating(false);
+        return "Failed to update project status";
+      }
     });
   };
 
@@ -48,7 +51,10 @@ export default function ProjectRowActions({ project, userRole }: { project: any,
         router.refresh();
         return "Project deleted successfully.";
       },
-      error: "Failed to delete project"
+      error: () => {
+        setIsUpdating(false);
+        return "Failed to delete project";
+      }
     });
   };
 

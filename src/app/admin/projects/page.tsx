@@ -3,21 +3,9 @@ import { getSession } from "@/lib/auth";
 import Link from "next/link";
 import { Plus, CheckCircle, Clock, PenTool } from "lucide-react";
 import ProjectRowActions from "../ProjectRowActions";
+import { cleanImageUrl } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-
-const cleanImageUrl = (url: string) => {
-  if (!url) return '';
-  if (url.includes('drive.google.com/file/d/')) {
-    const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-    if (match && match[1]) return `/api/proxy-image?id=${match[1]}`;
-  }
-  if (url.includes('drive.google.com/uc')) {
-    const match = url.match(/id=([a-zA-Z0-9_-]+)/);
-    if (match && match[1]) return `/api/proxy-image?id=${match[1]}`;
-  }
-  return url;
-};
 
 export default async function AdminProjectsPage() {
   const [projects, session] = await Promise.all([

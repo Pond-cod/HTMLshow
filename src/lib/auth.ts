@@ -3,7 +3,17 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { User, Role } from "@/types/user";
 
-const secretKey = process.env.JWT_SECRET || "super_secret_for_local_development";
+const secretKey = (() => {
+  const key = process.env.JWT_SECRET;
+  if (!key) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error("FATAL: JWT_SECRET environment variable is not set. Set it in your Vercel environment variables.");
+    }
+    console.warn("\x1b[33m[AUTH WARNING] JWT_SECRET is not set. Using insecure fallback for local development only.\x1b[0m");
+    return "super_secret_for_local_development_only_replace_this";
+  }
+  return key;
+})();
 const key = new TextEncoder().encode(secretKey);
 
 export async function encrypt(payload: any) {

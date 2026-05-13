@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { setLoginSession } from "@/lib/auth";
 import { getAllUsers } from "@/lib/google/sheets";
+import { verifyPassword } from "@/lib/password";
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,11 +9,11 @@ export async function POST(request: NextRequest) {
     
     // Auto-create initial sheet or fetch existing users
     const users = await getAllUsers();
-    const user = users.find(u => u.username === username && u.password === password);
-
-    if (user) {
-      await setLoginSession(user);
-      return NextResponse.json({ success: true, role: user.role });
+    // Find user by username first, then verify password (supports both hashed and legacy plain-text)
+    const userRecord = users.find(u => u.username === username);
+    if (userRecord && await verifyPassword(password, userRecord.password)) {
+      await setLoginSession(userRecord);
+      return NextResponse.json({ success: true, role: userRecord.role });
     }
     
     return NextResponse.json(

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, X, ExternalLink, BookOpen, PlayCircle } from "lucide-react";
 import Image from "next/image";
+import { cleanImageUrl } from "@/lib/utils";
 
 interface Project {
   id: string;
@@ -19,31 +20,24 @@ interface Project {
   learning_url?: string;
 }
 
-const cleanImageUrl = (url?: string) => {
-  if (!url) return '';
-  if (url.includes('drive.google.com/file/d/')) {
-    const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-    if (match && match[1]) return `/api/proxy-image?id=${match[1]}`;
-  }
-  if (url.includes('drive.google.com/uc')) {
-    const match = url.match(/id=([a-zA-Z0-9_-]+)/);
-    if (match && match[1]) return `/api/proxy-image?id=${match[1]}`;
-  }
-  return url;
-};
 
 export default function ProjectGrid({ projects }: { projects: Project[] }) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
-  // Prevent scrolling when modal is open
+  // Prevent scrolling + handle Escape key when modal is open
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedProject(null);
+    };
     if (selectedProject) {
       document.body.style.overflow = "hidden";
+      window.addEventListener('keydown', handleKeyDown);
     } else {
       document.body.style.overflow = "unset";
     }
     return () => {
       document.body.style.overflow = "unset";
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [selectedProject]);
 

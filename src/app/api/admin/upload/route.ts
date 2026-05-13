@@ -10,6 +10,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: "No file provided" }, { status: 400 });
     }
 
+    // Limit file size to 10MB
+    const MAX_SIZE = 10 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json({ success: false, message: `File too large. Maximum size is 10MB. (Current: ${(file.size / 1024 / 1024).toFixed(1)}MB)` }, { status: 413 });
+    }
+
     const buffer = Buffer.from(await file.arrayBuffer());
     
     // We upload to the shared folder to bypass Service Account workspace quota limits

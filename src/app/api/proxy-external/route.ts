@@ -12,6 +12,12 @@ export async function GET(request: NextRequest) {
   try {
     // Validate URL
     const parsedUrl = new URL(url);
+
+    // Block SSRF: prevent access to internal/loopback addresses
+    const blockedHosts = ['localhost', '127.0.0.1', '0.0.0.0', '::1', '169.254.169.254'];
+    if (blockedHosts.includes(parsedUrl.hostname) || parsedUrl.hostname.endsWith('.local') || parsedUrl.hostname.endsWith('.internal')) {
+      return new NextResponse("Forbidden", { status: 403 });
+    }
     
     // Fetch the external page
     const response = await fetch(url, {

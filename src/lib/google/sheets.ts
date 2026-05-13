@@ -410,12 +410,15 @@ const ensureUsersSheetExists = async (sheets: any, spreadsheetId: string) => {
 
     // Seed initial admin user based on environment variables if present
     const seedAdmin = process.env.ADMIN_USERNAME || "admin";
-    const seedPass = process.env.ADMIN_PASSWORD || "123456";
+    const seedPassPlain = process.env.ADMIN_PASSWORD || "123456";
+    // Hash the seed password to avoid storing plain text
+    const { hashPassword } = await import("../password");
+    const seedPassHashed = await hashPassword(seedPassPlain);
     await sheets.spreadsheets.values.append({
       spreadsheetId,
       range: `${USERS_SHEET_NAME}!A:C`,
       valueInputOption: "USER_ENTERED",
-      requestBody: { values: [[seedAdmin, seedPass, "admin"]] },
+      requestBody: { values: [[seedAdmin, seedPassHashed, "admin"]] },
     });
   }
   return USERS_SHEET_NAME;
