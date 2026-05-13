@@ -20,6 +20,9 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
     learning_text: initialProject?.learning_text || "",
     learning_image_url: initialProject?.learning_image_url || "",
     learning_url: initialProject?.learning_url || "",
+    other_text: initialProject?.other_text || "",
+    other_image_url: initialProject?.other_image_url || "",
+    other_url: initialProject?.other_url || "",
   });
   
   const [htmlContent, setHtmlContent] = useState("");
