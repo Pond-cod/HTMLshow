@@ -11,8 +11,8 @@ const KEY_LENGTH = 32; // bytes
 const HASH_ALGO = "SHA-256";
 const PREFIX = "pbkdf2:v1:";
 
-function buf2b64(buf: ArrayBuffer): string {
-  return Buffer.from(buf).toString("base64");
+function buf2b64(buf: ArrayBuffer | Uint8Array): string {
+  return Buffer.from(buf instanceof Uint8Array ? buf : new Uint8Array(buf)).toString("base64");
 }
 
 function b642buf(b64: string): Uint8Array {
