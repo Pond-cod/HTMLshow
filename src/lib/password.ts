@@ -11,12 +11,18 @@ const KEY_LENGTH = 32; // bytes
 const HASH_ALGO = "SHA-256";
 const PREFIX = "pbkdf2:v1:";
 
-function buf2b64(buf: ArrayBuffer | Uint8Array): string {
-  return Buffer.from(buf instanceof Uint8Array ? buf : new Uint8Array(buf)).toString("base64");
+/** Convert Uint8Array → base64 string */
+function toBase64(arr: Uint8Array): string {
+  return Buffer.from(arr).toString("base64");
 }
 
-function b642buf(b64: string): Uint8Array {
-  return Buffer.from(b64, "base64");
+/**
+ * Convert base64 string → fresh Uint8Array backed by a plain ArrayBuffer.
+ * Using Uint8Array.from() avoids the SharedArrayBuffer type mismatch
+ * that occurs with Buffer.from() when passed to Web Crypto APIs.
+ */
+function fromBase64(b64: string): Uint8Array {
+  return Uint8Array.from(Buffer.from(b64, "base64"));
 }
 
 /**
@@ -37,7 +43,7 @@ export async function hashPassword(plain: string): Promise<string> {
     keyMaterial,
     KEY_LENGTH * 8
   );
-  return `${PREFIX}${buf2b64(salt)}:${buf2b64(derived)}`;
+  return `${PREFIX}${toBase64(salt)}:${toBase64(new Uint8Array(derived))}`;
 }
 
 /**
@@ -56,8 +62,10 @@ export async function verifyPassword(plain: string, stored: string): Promise<boo
   const [saltB64, hashB64] = parts;
 
   try {
-    const salt = b642buf(saltB64);
-    const expectedHash = b642buf(hashB64);
+    // fromBase64 returns a fresh Uint8Array<ArrayBuffer> (not SharedArrayBuffer)
+    const salt = fromBase64(saltB64);
+    const expectedHash = fromBase64(hashB64);
+
     const keyMaterial = await crypto.subtle.importKey(
       "raw",
       new TextEncoder().encode(plain),
@@ -71,7 +79,8 @@ export async function verifyPassword(plain: string, stored: string): Promise<boo
       KEY_LENGTH * 8
     );
     const derivedArr = new Uint8Array(derived);
-    // Constant-time comparison
+
+    // Constant-time comparison to prevent timing attacks
     if (derivedArr.length !== expectedHash.length) return false;
     let diff = 0;
     for (let i = 0; i < derivedArr.length; i++) {
