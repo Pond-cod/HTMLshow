@@ -53,7 +53,7 @@ export const getAllProjects = async (): Promise<Project[]> => {
   const sheets = getSheetsClient();
   try {
     const sheetName = await getFirstSheetName(sheets, spreadsheetId);
-    const range = `${sheetName}!A2:H`;
+    const range = `${sheetName}!A2:N`;
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
@@ -70,6 +70,12 @@ export const getAllProjects = async (): Promise<Project[]> => {
       html_drive_id: row[5] || "",
       last_updated: row[6] || "",
       status: (row[7] as 'published' | 'draft' | 'pending') || "draft",
+      manual_text: row[8] || "",
+      manual_image_url: row[9] || "",
+      manual_url: row[10] || "",
+      learning_text: row[11] || "",
+      learning_image_url: row[12] || "",
+      learning_url: row[13] || "",
     }));
   } catch (error: any) {
     console.error("Error fetching projects from sheets:", error?.message);
@@ -113,6 +119,12 @@ export const addProject = async (projectData: Partial<Project>, userRole?: strin
     html_drive_id: projectData.html_drive_id || "",
     last_updated: new Date().toISOString(),
     status: status as any,
+    manual_text: projectData.manual_text || "",
+    manual_image_url: projectData.manual_image_url || "",
+    manual_url: projectData.manual_url || "",
+    learning_text: projectData.learning_text || "",
+    learning_image_url: projectData.learning_image_url || "",
+    learning_url: projectData.learning_url || "",
   };
 
   const values = [
@@ -124,13 +136,19 @@ export const addProject = async (projectData: Partial<Project>, userRole?: strin
       newProject.thumbnail_url,
       newProject.html_drive_id,
       newProject.last_updated,
-      newProject.status
+      newProject.status,
+      newProject.manual_text,
+      newProject.manual_image_url,
+      newProject.manual_url,
+      newProject.learning_text,
+      newProject.learning_image_url,
+      newProject.learning_url
     ]
   ];
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: `${sheetName}!A:H`,
+    range: `${sheetName}!A:N`,
     valueInputOption: "USER_ENTERED",
     requestBody: { values },
   });
@@ -143,7 +161,7 @@ export const updateProject = async (id: string, updateData: Partial<Project>, us
   const sheets = getSheetsClient();
   
   const sheetName = await getFirstSheetName(sheets, spreadsheetId!);
-  const range = `${sheetName}!A2:H`;
+  const range = `${sheetName}!A2:N`;
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
@@ -174,11 +192,17 @@ export const updateProject = async (id: string, updateData: Partial<Project>, us
     updateData.html_drive_id !== undefined ? updateData.html_drive_id : existingRow[5],
     updateData.last_updated !== undefined ? updateData.last_updated : new Date().toISOString(),
     status,
+    updateData.manual_text !== undefined ? updateData.manual_text : (existingRow[8] || ""),
+    updateData.manual_image_url !== undefined ? updateData.manual_image_url : (existingRow[9] || ""),
+    updateData.manual_url !== undefined ? updateData.manual_url : (existingRow[10] || ""),
+    updateData.learning_text !== undefined ? updateData.learning_text : (existingRow[11] || ""),
+    updateData.learning_image_url !== undefined ? updateData.learning_image_url : (existingRow[12] || ""),
+    updateData.learning_url !== undefined ? updateData.learning_url : (existingRow[13] || ""),
   ];
 
   await sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: `${sheetName}!A${sheetRow}:H${sheetRow}`,
+    range: `${sheetName}!A${sheetRow}:N${sheetRow}`,
     valueInputOption: "USER_ENTERED",
     requestBody: { values: [updatedValues] },
   });
@@ -201,7 +225,7 @@ export const deleteProject = async (id: string): Promise<boolean> => {
   
   const valuesResponse = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: `${sheetName}!A2:H`,
+    range: `${sheetName}!A2:N`,
   });
   
   const rows = valuesResponse.data.values || [];

@@ -14,6 +14,12 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
     thumbnail_url: initialProject?.thumbnail_url || "",
     html_drive_id: initialProject?.html_drive_id || "",
     status: initialProject?.status || "draft",
+    manual_text: initialProject?.manual_text || "",
+    manual_image_url: initialProject?.manual_image_url || "",
+    manual_url: initialProject?.manual_url || "",
+    learning_text: initialProject?.learning_text || "",
+    learning_image_url: initialProject?.learning_image_url || "",
+    learning_url: initialProject?.learning_url || "",
   });
   
   const [htmlContent, setHtmlContent] = useState("");
@@ -63,7 +69,7 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
     let value = e.target.value;
     
     // Auto-convert Google Drive viewer URLs to direct raw image URLs for rendering in <img> tags
-    if ((e.target.name === 'thumbnail_url' || e.target.name === 'image_url') && value.includes('drive.google.com/file/d/')) {
+    if ((e.target.name === 'thumbnail_url' || e.target.name === 'image_url' || e.target.name === 'manual_image_url' || e.target.name === 'learning_image_url') && value.includes('drive.google.com/file/d/')) {
         const match = value.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
         if (match && match[1]) {
             value = `https://drive.google.com/uc?export=view&id=${match[1]}`;
@@ -234,6 +240,53 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
                     <LinkIcon className="text-slate-400 w-5 h-5"/>
                  </div>
                  <input type="text" name="thumbnail_url" value={formData.thumbnail_url} onChange={handleChange} className="w-full px-4 py-3 border border-slate-700 rounded-r-xl bg-slate-800/30 text-white text-sm outline-none group-focus-within:border-yellow-400 transition-colors" placeholder="Drive URL will appear here" />
+               </div>
+            </div>
+          </div>
+
+          {/* Highlight Resources Card */}
+          <div className="bg-slate-900/50 backdrop-blur-xl rounded-3xl p-8 border border-slate-800 shadow-2xl space-y-5">
+            <h2 className="text-xl font-bold text-white mb-4 border-b border-slate-800/80 pb-4">คู่มือ & สื่อการเรียน</h2>
+            
+            <div className="space-y-4">
+               <h3 className="text-sm font-bold text-yellow-400 flex items-center gap-2">
+                 <LinkIcon size={16} /> คู่มือการใช้งาน (User Manual)
+               </h3>
+               <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">ข้อความแสดงบนปุ่ม</label>
+                  <input type="text" name="manual_text" value={formData.manual_text} onChange={handleChange} className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-lg text-white outline-none text-sm transition-colors" placeholder="Ex: คลิกเพื่ออ่านคู่มือ..." />
+               </div>
+               <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">URL ลิงก์ปลายทาง</label>
+                  <input type="text" name="manual_url" value={formData.manual_url} onChange={handleChange} className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-lg text-white outline-none text-sm transition-colors" placeholder="https://..." />
+               </div>
+               <div>
+                 <label className="block text-xs font-semibold text-slate-300 mb-1 flex justify-between items-center">
+                   <span>ภาพหน้าปก (Cover Image)</span>
+                   <UploadButton field="manual_image_url" uploadingField={uploadingField} onUpload={handleFileUpload} accept="image/*" label="Upload" />
+                 </label>
+                 <input type="text" name="manual_image_url" value={formData.manual_image_url} onChange={handleChange} className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-lg text-white outline-none text-sm mt-1 transition-colors" placeholder="Drive URL หรือ Image URL" />
+               </div>
+            </div>
+
+            <div className="space-y-4 pt-4 border-t border-slate-800/50">
+               <h3 className="text-sm font-bold text-blue-400 flex items-center gap-2">
+                 <LinkIcon size={16} /> สื่อการเรียน (Learning Materials)
+               </h3>
+               <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">ข้อความแสดงบนปุ่ม</label>
+                  <input type="text" name="learning_text" value={formData.learning_text} onChange={handleChange} className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 focus:border-blue-400 rounded-lg text-white outline-none text-sm transition-colors" placeholder="Ex: ดูวิดีโอสอน..." />
+               </div>
+               <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">URL ลิงก์ปลายทาง</label>
+                  <input type="text" name="learning_url" value={formData.learning_url} onChange={handleChange} className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 focus:border-blue-400 rounded-lg text-white outline-none text-sm transition-colors" placeholder="https://..." />
+               </div>
+               <div>
+                 <label className="block text-xs font-semibold text-slate-300 mb-1 flex justify-between items-center">
+                   <span>ภาพหน้าปก (Cover Image)</span>
+                   <UploadButton field="learning_image_url" uploadingField={uploadingField} onUpload={handleFileUpload} accept="image/*" label="Upload" />
+                 </label>
+                 <input type="text" name="learning_image_url" value={formData.learning_image_url} onChange={handleChange} className="w-full px-3 py-2 bg-slate-800/50 border border-slate-700 focus:border-blue-400 rounded-lg text-white outline-none text-sm mt-1 transition-colors" placeholder="Drive URL หรือ Image URL" />
                </div>
             </div>
           </div>

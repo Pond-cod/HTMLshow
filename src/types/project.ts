@@ -7,4 +7,10 @@ export interface Project {
   html_drive_id: string;
   last_updated: string;
   status: 'published' | 'draft' | 'pending';
+  manual_text?: string;
+  manual_image_url?: string;
+  manual_url?: string;
+  learning_text?: string;
+  learning_image_url?: string;
+  learning_url?: string;
 }

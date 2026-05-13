@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, X, ExternalLink } from "lucide-react";
+import { ArrowRight, X, ExternalLink, BookOpen, PlayCircle } from "lucide-react";
 import Image from "next/image";
 
 interface Project {
@@ -11,6 +11,12 @@ interface Project {
   thumbnail_url?: string;
   html_drive_id?: string;
   last_updated?: string;
+  manual_text?: string;
+  manual_image_url?: string;
+  manual_url?: string;
+  learning_text?: string;
+  learning_image_url?: string;
+  learning_url?: string;
 }
 
 const cleanImageUrl = (url?: string) => {
@@ -156,6 +162,55 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
                   </button>
                 </div>
               </div>
+
+              {/* Highlight Resources Bar */}
+              {(selectedProject.manual_url || selectedProject.learning_url) && (
+                <div className="flex flex-wrap items-center gap-4 p-4 border-b border-white/5 bg-slate-900/80 backdrop-blur-md">
+                  {selectedProject.manual_url && (
+                    <a
+                      href={selectedProject.manual_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group relative flex items-center gap-3 overflow-hidden rounded-xl border border-yellow-500/30 bg-slate-800/80 p-2 pr-4 transition-all hover:border-yellow-400 hover:bg-slate-800 shadow-md hover:shadow-yellow-500/20"
+                    >
+                      {selectedProject.manual_image_url ? (
+                        <div className="relative h-10 w-10 overflow-hidden rounded-lg bg-slate-950">
+                          <Image src={cleanImageUrl(selectedProject.manual_image_url)} alt={selectedProject.manual_text || "Manual"} fill sizes="40px" className="object-cover transition-transform group-hover:scale-110" />
+                        </div>
+                      ) : (
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-500/20 text-yellow-500">
+                          <BookOpen size={20} />
+                        </div>
+                      )}
+                      <span className="font-semibold text-slate-200 group-hover:text-yellow-400 text-sm">
+                        {selectedProject.manual_text || "คู่มือการใช้งาน"}
+                      </span>
+                    </a>
+                  )}
+
+                  {selectedProject.learning_url && (
+                    <a
+                      href={selectedProject.learning_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group relative flex items-center gap-3 overflow-hidden rounded-xl border border-blue-500/30 bg-slate-800/80 p-2 pr-4 transition-all hover:border-blue-400 hover:bg-slate-800 shadow-md hover:shadow-blue-500/20"
+                    >
+                      {selectedProject.learning_image_url ? (
+                        <div className="relative h-10 w-10 overflow-hidden rounded-lg bg-slate-950">
+                          <Image src={cleanImageUrl(selectedProject.learning_image_url)} alt={selectedProject.learning_text || "Learning"} fill sizes="40px" className="object-cover transition-transform group-hover:scale-110" />
+                        </div>
+                      ) : (
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/20 text-blue-500">
+                          <PlayCircle size={20} />
+                        </div>
+                      )}
+                      <span className="font-semibold text-slate-200 group-hover:text-blue-400 text-sm">
+                        {selectedProject.learning_text || "สื่อการเรียน"}
+                      </span>
+                    </a>
+                  )}
+                </div>
+              )}
 
               {/* Modal Content (Iframe) */}
               <div className="flex-1 bg-slate-950 relative w-full h-full overflow-hidden">
