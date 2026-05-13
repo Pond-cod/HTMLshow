@@ -13,6 +13,12 @@ export default function SettingsPage() {
     hero_badge: "",
     facebook_url: "",
     contact_email: "",
+    contact_phone: "",
+    line_id: "",
+    youtube_url: "",
+    instagram_url: "",
+    address: "",
+    footer_description: "",
     cta_text: "คลิกเลือกดูผลงานผลงานได้เลย",
     cta_size: "18",
     cta_color: "#ef4444",
@@ -396,27 +402,15 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Global Connections */}
         <div className="bg-slate-900/50 backdrop-blur-xl rounded-3xl p-8 border border-slate-800 shadow-2xl h-fit">
           <div className="flex items-center gap-3 mb-6">
             <Settings2 className="text-yellow-400" size={24} />
-            <h2 className="text-xl font-bold text-white">Global Connections</h2>
+            <h2 className="text-xl font-bold text-white">ข้อมูลติดต่อ & ช่องทางสื่อสาร</h2>
           </div>
 
           <div className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-2">Facebook URL</label>
-              <input 
-                type="text" 
-                name="facebook_url" 
-                value={settings.facebook_url || ""} 
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all"
-                placeholder="https://facebook.com/..."
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-2">Contact Email</label>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">อีเมลติดต่อ</label>
               <input 
                 type="email" 
                 name="contact_email" 
@@ -425,6 +419,91 @@ export default function SettingsPage() {
                 className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all"
                 placeholder="hello@company.com"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">เบอร์โทรศัพท์</label>
+              <input 
+                type="text" 
+                name="contact_phone" 
+                value={settings.contact_phone || ""} 
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all"
+                placeholder="0xx-xxx-xxxx"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">LINE ID</label>
+              <input 
+                type="text" 
+                name="line_id" 
+                value={settings.line_id || ""} 
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all"
+                placeholder="@yourlineid"
+              />
+            </div>
+
+            <div className="pt-4 border-t border-slate-800/80 space-y-5">
+              <h3 className="text-yellow-400 font-semibold text-sm uppercase tracking-widest">โซเชียลมีเดีย</h3>
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">Facebook URL</label>
+                <input 
+                  type="text" 
+                  name="facebook_url" 
+                  value={settings.facebook_url || ""} 
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all"
+                  placeholder="https://facebook.com/..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">YouTube URL</label>
+                <input 
+                  type="text" 
+                  name="youtube_url" 
+                  value={settings.youtube_url || ""} 
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all"
+                  placeholder="https://youtube.com/@..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">Instagram URL</label>
+                <input 
+                  type="text" 
+                  name="instagram_url" 
+                  value={settings.instagram_url || ""} 
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all"
+                  placeholder="https://instagram.com/..."
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-800/80 space-y-5">
+              <h3 className="text-yellow-400 font-semibold text-sm uppercase tracking-widest">ที่อยู่ & Footer</h3>
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">ที่อยู่ / สถานที่ตั้ง</label>
+                <textarea 
+                  name="address" 
+                  rows={2}
+                  value={settings.address || ""} 
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all"
+                  placeholder="123 ถ.xxx อ.xxx จ.xxx 12345"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">ข้อความท้ายเว็บ (Footer Description)</label>
+                <textarea 
+                  name="footer_description" 
+                  rows={2}
+                  value={settings.footer_description || ""} 
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all"
+                  placeholder="ขับเคลื่อนนวัตกรรม IoT และระบบอัจฉริยะ เพื่ออนาคตที่ดีกว่า"
+                />
+              </div>
             </div>
           </div>
         </div>

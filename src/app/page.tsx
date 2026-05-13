@@ -2,6 +2,7 @@ import { getPublishedProjects } from "@/lib/google/sheets";
 import { getSiteSettings } from "@/lib/google/settings";
 import ProjectGrid from "./ProjectGrid";
 import TopNavbar from "@/components/TopNavbar";
+import Footer from "@/components/Footer";
 import { Sparkles, Zap, Globe, ChevronDown } from "lucide-react";
 
 export const revalidate = 60; // Revalidate every 60 seconds (ISR)
@@ -113,14 +114,10 @@ export default async function Home() {
             <ProjectGrid projects={projects} />
           </div>
 
-          {/* Footer */}
-          <footer className="w-full max-w-7xl mx-auto mt-16 sm:mt-24 pb-8 text-center border-t border-white/5 pt-8">
-            <p className="text-xs text-slate-600 font-medium tracking-wider">
-              © {new Date().getFullYear()} DeeDevIOT — Built with precision.
-            </p>
-          </footer>
         </div>
       </main>
+
+      <Footer settings={settings} />
     </div>
   );
 }

@@ -12,6 +12,12 @@ export interface SiteSettings {
   hero_badge: string;
   facebook_url: string;
   contact_email: string;
+  contact_phone: string;
+  line_id: string;
+  youtube_url: string;
+  instagram_url: string;
+  address: string;
+  footer_description: string;
   cta_text: string;
   cta_size: string;
   cta_color: string;
@@ -29,6 +35,12 @@ const defaultSettings: SiteSettings = {
   hero_badge: "Technology Powerhouse",
   facebook_url: "https://facebook.com",
   contact_email: "contact@deedeviot.com",
+  contact_phone: "",
+  line_id: "",
+  youtube_url: "",
+  instagram_url: "",
+  address: "",
+  footer_description: "ขับเคลื่อนนวัตกรรม IoT และระบบอัจฉริยะ เพื่ออนาคตที่ดีกว่า",
   cta_text: "คลิกเลือกดูผลงานผลงานได้เลย",
   cta_size: "18",
   cta_color: "#ef4444",
