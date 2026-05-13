@@ -13,4 +13,7 @@ export interface Project {
   learning_text?: string;
   learning_image_url?: string;
   learning_url?: string;
+  other_text?: string;
+  other_image_url?: string;
+  other_url?: string;
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, X, ExternalLink, BookOpen, PlayCircle, Maximize2 } from "lucide-react";
+import { ArrowRight, X, ExternalLink, BookOpen, PlayCircle, Maximize2, Link2 } from "lucide-react";
 import Image from "next/image";
 import { cleanImageUrl } from "@/lib/utils";
 
@@ -18,6 +18,9 @@ interface Project {
   learning_text?: string;
   learning_image_url?: string;
   learning_url?: string;
+  other_text?: string;
+  other_image_url?: string;
+  other_url?: string;
 }
 
 export default function ProjectGrid({ projects }: { projects: Project[] }) {
@@ -166,7 +169,7 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
               </div>
 
               {/* Highlight Resources Bar */}
-              {(selectedProject.manual_url || selectedProject.learning_url) && (
+              {(selectedProject.manual_url || selectedProject.learning_url || selectedProject.other_url) && (
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 p-3 sm:p-4 border-b border-white/5 bg-slate-900/80 backdrop-blur-md shrink-0">
                   {selectedProject.manual_url && (
                     <a
@@ -208,6 +211,28 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
                       )}
                       <span className="font-semibold text-slate-200 group-hover/res:text-blue-400 text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">
                         {selectedProject.learning_text || "สื่อการเรียน"}
+                      </span>
+                    </a>
+                  )}
+
+                  {selectedProject.other_url && (
+                    <a
+                      href={selectedProject.other_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group/res relative flex items-center gap-2 sm:gap-3 overflow-hidden rounded-xl border border-emerald-500/30 bg-slate-800/80 p-1.5 sm:p-2 pr-3 sm:pr-4 transition-all hover:border-emerald-400 hover:bg-slate-800 shadow-md hover:shadow-emerald-500/20 active:scale-[0.97]"
+                    >
+                      {selectedProject.other_image_url ? (
+                        <div className="relative h-8 w-8 sm:h-10 sm:w-10 overflow-hidden rounded-lg bg-slate-950 shrink-0">
+                          <Image src={cleanImageUrl(selectedProject.other_image_url)} alt={selectedProject.other_text || "Other"} fill sizes="40px" className="object-cover transition-transform group-hover/res:scale-110" />
+                        </div>
+                      ) : (
+                        <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-500 shrink-0">
+                          <Link2 size={16} className="sm:w-5 sm:h-5" />
+                        </div>
+                      )}
+                      <span className="font-semibold text-slate-200 group-hover/res:text-emerald-400 text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">
+                        {selectedProject.other_text || "ข้อมูลเพิ่มเติม"}
                       </span>
                     </a>
                   )}
