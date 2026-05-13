@@ -17,6 +17,7 @@ export default function SettingsPage() {
     line_id: "",
     youtube_url: "",
     instagram_url: "",
+    tiktok_url: "",
     address: "",
     footer_description: "",
     cta_text: "คลิกเลือกดูผลงานผลงานได้เลย",
@@ -476,6 +477,17 @@ export default function SettingsPage() {
                   onChange={handleChange}
                   className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all"
                   placeholder="https://instagram.com/..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-300 mb-2">TikTok URL</label>
+                <input 
+                  type="text" 
+                  name="tiktok_url" 
+                  value={settings.tiktok_url || ""} 
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 focus:border-yellow-400 rounded-xl text-white outline-none transition-all"
+                  placeholder="https://tiktok.com/@..."
                 />
               </div>
             </div>

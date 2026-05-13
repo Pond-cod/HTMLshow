@@ -2,9 +2,25 @@ import { Rocket, Mail, Phone, MapPin, Facebook, Youtube, Instagram, MessageCircl
 import Link from "next/link";
 import { SiteSettings } from "@/lib/google/settings";
 
+const TikTokIcon = ({ size = 24, className = "" }: { size?: number, className?: string }) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+  </svg>
+);
+
 export default function Footer({ settings }: { settings: SiteSettings }) {
   const hasContact = settings.contact_email || settings.contact_phone || settings.line_id;
-  const hasSocial = settings.facebook_url || settings.youtube_url || settings.instagram_url;
+  const hasSocial = settings.facebook_url || settings.youtube_url || settings.instagram_url || settings.tiktok_url;
   const hasAddress = settings.address;
 
   return (
@@ -109,6 +125,17 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
                     </a>
                   </li>
                 )}
+                {settings.tiktok_url && (
+                  <li>
+                    <a href={settings.tiktok_url} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-sm text-slate-400 hover:text-white transition-colors group">
+                      <div className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center group-hover:border-white/50 transition-colors shrink-0">
+                        <TikTokIcon size={14} className="text-slate-500 group-hover:text-white transition-colors" />
+                      </div>
+                      <span>TikTok</span>
+                      <ExternalLink size={12} className="text-slate-700 ml-auto" />
+                    </a>
+                  </li>
+                )}
               </ul>
             </div>
           )}
@@ -147,6 +174,11 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
               {settings.instagram_url && (
                 <a href={settings.instagram_url} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 hover:text-pink-400 hover:border-pink-400/50 transition-all hover:scale-110">
                   <Instagram size={14} />
+                </a>
+              )}
+              {settings.tiktok_url && (
+                <a href={settings.tiktok_url} target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 hover:text-white hover:border-white/50 transition-all hover:scale-110">
+                  <TikTokIcon size={14} />
                 </a>
               )}
             </div>

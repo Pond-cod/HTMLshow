@@ -16,6 +16,7 @@ export interface SiteSettings {
   line_id: string;
   youtube_url: string;
   instagram_url: string;
+  tiktok_url: string;
   address: string;
   footer_description: string;
   cta_text: string;
@@ -39,6 +40,7 @@ const defaultSettings: SiteSettings = {
   line_id: "",
   youtube_url: "",
   instagram_url: "",
+  tiktok_url: "",
   address: "",
   footer_description: "ขับเคลื่อนนวัตกรรม IoT และระบบอัจฉริยะ เพื่ออนาคตที่ดีกว่า",
   cta_text: "คลิกเลือกดูผลงานผลงานได้เลย",
