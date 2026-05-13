@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const users = await getAllUsers();
     // Find user by username first, then verify password (supports both hashed and legacy plain-text)
     const userRecord = users.find(u => u.username === username);
-    if (userRecord && await verifyPassword(password, userRecord.password)) {
+    if (userRecord && userRecord.password && await verifyPassword(password, userRecord.password)) {
       await setLoginSession(userRecord);
       return NextResponse.json({ success: true, role: userRecord.role });
     }
