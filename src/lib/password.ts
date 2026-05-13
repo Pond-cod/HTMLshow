@@ -13,16 +13,32 @@ const PREFIX = "pbkdf2:v1:";
 
 /** Convert Uint8Array → base64 string */
 function toBase64(arr: Uint8Array): string {
-  return Buffer.from(arr).toString("base64");
+  let binary = "";
+  for (let i = 0; i < arr.length; i++) {
+    binary += String.fromCharCode(arr[i]);
+  }
+  return btoa(binary);
 }
 
 /**
- * Convert base64 string → fresh Uint8Array backed by a plain ArrayBuffer.
- * Using Uint8Array.from() avoids the SharedArrayBuffer type mismatch
- * that occurs with Buffer.from() when passed to Web Crypto APIs.
+ * Convert base64 string → Uint8Array backed by a guaranteed plain ArrayBuffer.
+ * This avoids the SharedArrayBuffer/ArrayBufferLike type issue in strict TS.
  */
 function fromBase64(b64: string): Uint8Array {
-  return Uint8Array.from(Buffer.from(b64, "base64"));
+  const binary = atob(b64);
+  const buf = new ArrayBuffer(binary.length);
+  const view = new Uint8Array(buf);
+  for (let i = 0; i < binary.length; i++) {
+    view[i] = binary.charCodeAt(i);
+  }
+  return view;
+}
+
+/**
+ * Create a fresh Uint8Array<ArrayBuffer> — guaranteed compatible with Web Crypto.
+ */
+function freshUint8(size: number): Uint8Array {
+  return new Uint8Array(new ArrayBuffer(size));
 }
 
 /**
@@ -30,7 +46,9 @@ function fromBase64(b64: string): Uint8Array {
  * the algorithm version, salt, and hash embedded.
  */
 export async function hashPassword(plain: string): Promise<string> {
-  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const salt = freshUint8(16);
+  crypto.getRandomValues(salt);
+
   const keyMaterial = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(plain),
@@ -62,7 +80,6 @@ export async function verifyPassword(plain: string, stored: string): Promise<boo
   const [saltB64, hashB64] = parts;
 
   try {
-    // fromBase64 returns a fresh Uint8Array<ArrayBuffer> (not SharedArrayBuffer)
     const salt = fromBase64(saltB64);
     const expectedHash = fromBase64(hashB64);
 
