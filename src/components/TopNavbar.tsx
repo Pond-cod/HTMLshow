@@ -74,7 +74,7 @@ export default function TopNavbar({ settings }: { settings: any }) {
               </a>
             )}
             {settings?.contact_email && (
-              <a href={`mailto:${settings.contact_email}`} className="text-sm font-bold text-slate-300 hover:text-yellow-400 transition-all px-3 py-2 rounded-xl hover:bg-white/5 flex items-center gap-2">
+              <a href="#contact" className="text-sm font-bold text-slate-300 hover:text-yellow-400 transition-all px-3 py-2 rounded-xl hover:bg-white/5 flex items-center gap-2">
                 <Mail size={15} /> Contact Us
               </a>
             )}
@@ -137,7 +137,8 @@ export default function TopNavbar({ settings }: { settings: any }) {
           )}
           {settings?.contact_email && (
             <a 
-              href={`mailto:${settings.contact_email}`} 
+              href="#contact" 
+              onClick={() => setIsOpen(false)}
               className="flex items-center justify-between text-base font-bold text-slate-200 hover:text-yellow-400 px-4 py-3.5 rounded-2xl hover:bg-white/5 transition-all active:scale-[0.98]"
             >
               <span className="flex items-center gap-3"><Mail size={18} /> ติดต่อเรา</span>

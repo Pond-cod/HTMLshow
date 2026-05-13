@@ -8,7 +8,7 @@ export default function Footer({ settings }: { settings: SiteSettings }) {
   const hasAddress = settings.address;
 
   return (
-    <footer className="relative w-full bg-slate-950 border-t border-white/5">
+    <footer id="contact" className="relative w-full bg-slate-950 border-t border-white/5 scroll-mt-20">
       {/* Top gradient line */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-yellow-400/30 to-transparent"></div>
 
