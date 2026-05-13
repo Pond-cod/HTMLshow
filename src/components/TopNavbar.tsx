@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, Rocket, LayoutGrid, Mail, LogIn, Eye } from "lucide-react";
+import { Menu, X, Rocket, LayoutGrid, Mail, LogIn, Eye, Facebook, ChevronRight } from "lucide-react";
 
 export default function TopNavbar({ settings }: { settings: any }) {
   const [isOpen, setIsOpen] = useState(false);
   const [viewCount, setViewCount] = useState<string>(settings?.site_views || "0");
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    // Only track once per browser session to prevent inflated counts from simple reloads
     const hasTracked = sessionStorage.getItem("view_tracked");
     if (!hasTracked) {
       sessionStorage.setItem("view_tracked", "1");
@@ -24,108 +24,132 @@ export default function TopNavbar({ settings }: { settings: any }) {
     }
   }, []);
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 30);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Close mobile menu on resize to desktop
+  useEffect(() => {
+    const onResize = () => { if (window.innerWidth >= 768) setIsOpen(false); };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
   return (
-    <nav className="fixed w-full z-50 transition-all duration-300 bg-slate-950/80 backdrop-blur-xl border-b border-white/5">
+    <nav className={`fixed w-full z-50 transition-all duration-500 ${scrolled ? 'bg-slate-950/95 backdrop-blur-2xl shadow-2xl shadow-black/30 border-b border-white/5' : 'bg-slate-950/60 backdrop-blur-xl border-b border-white/[0.02]'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between items-center h-16 sm:h-20">
           
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(250,204,21,0.2)] group-hover:shadow-[0_0_25px_rgba(250,204,21,0.4)] transition-all">
-              <Rocket className="text-slate-950 w-5 h-5 font-bold" />
+          <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(250,204,21,0.25)] group-hover:shadow-[0_0_30px_rgba(250,204,21,0.5)] transition-all group-hover:scale-105">
+              <Rocket className="text-slate-950 w-4 h-4 sm:w-5 sm:h-5 font-bold" />
             </div>
-            <span className="text-2xl font-black text-white tracking-tighter">
+            <span className="text-xl sm:text-2xl font-black text-white tracking-tighter">
               DeeDev<span className="text-yellow-400">IOT</span>
             </span>
           </Link>
 
-          {/* Center View Counter Badge */}
-          <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 items-center gap-2 bg-slate-900/60 border border-slate-700/50 px-4 py-1.5 rounded-full shadow-[inset_0_0_15px_rgba(250,204,21,0.05)] backdrop-blur-md transition-all hover:bg-slate-800/80 hover:border-yellow-400/30">
+          {/* Center: View Counter — uses pointer-events-none on wrapper to not block nav links */}
+          <div className="hidden lg:flex items-center gap-2 bg-slate-900/60 border border-slate-700/50 px-4 py-1.5 rounded-full shadow-[inset_0_0_15px_rgba(250,204,21,0.05)] backdrop-blur-md">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
             </span>
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest px-2">คนเข้าดูผล</span>
-            <span className="text-sm font-black text-yellow-400 tracking-wider bg-slate-950/50 px-2 py-0.5 rounded-md border border-slate-800">{viewCount}</span>
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest pr-2">คน</span>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">คนเข้าดูผล</span>
+            <span className="text-sm font-black text-yellow-400 tracking-wider bg-slate-950/50 px-2.5 py-0.5 rounded-md border border-slate-800">{viewCount}</span>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">คน</span>
           </div>
 
-          {/* Desktop Links */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link href="/" className="text-sm font-bold text-slate-300 hover:text-yellow-400 transition-colors flex items-center gap-2">
-              <LayoutGrid size={16} /> Showcase
+          {/* Desktop Links — uses relative z-10 to stay above any overlaps */}
+          <div className="hidden md:flex items-center gap-1 relative z-10">
+            <Link href="/#projects" className="text-sm font-bold text-slate-300 hover:text-yellow-400 transition-all px-3 py-2 rounded-xl hover:bg-white/5 flex items-center gap-2">
+              <LayoutGrid size={15} /> Showcase
             </Link>
             {settings?.facebook_url && (
-              <a href={settings.facebook_url} target="_blank" rel="noreferrer" className="text-sm font-bold text-slate-300 hover:text-yellow-400 transition-colors">
-                Facebook
+              <a href={settings.facebook_url} target="_blank" rel="noreferrer" className="text-sm font-bold text-slate-300 hover:text-yellow-400 transition-all px-3 py-2 rounded-xl hover:bg-white/5 flex items-center gap-2">
+                <Facebook size={15} /> Facebook
               </a>
             )}
             {settings?.contact_email && (
-              <a href={`mailto:${settings.contact_email}`} className="text-sm font-bold text-slate-300 hover:text-yellow-400 transition-colors flex items-center gap-2">
-                <Mail size={16} /> Contact Us
+              <a href={`mailto:${settings.contact_email}`} className="text-sm font-bold text-slate-300 hover:text-yellow-400 transition-all px-3 py-2 rounded-xl hover:bg-white/5 flex items-center gap-2">
+                <Mail size={15} /> Contact Us
               </a>
             )}
             
             <Link 
               href="/admin" 
-              className="ml-4 bg-slate-800 hover:bg-slate-700 text-slate-100 px-5 py-2.5 rounded-full font-bold text-sm border border-slate-700 transition-all hover:border-yellow-400/50 flex items-center gap-2"
+              className="ml-2 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 px-5 py-2 rounded-full font-bold text-sm transition-all hover:shadow-[0_0_25px_rgba(250,204,21,0.4)] hover:scale-105 flex items-center gap-2"
             >
-              <LogIn size={16} />
+              <LogIn size={15} />
               Portal Login
             </Link>
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center gap-3">
+            {/* Mobile view counter - compact */}
+            <div className="flex items-center gap-1.5 bg-slate-900/60 border border-slate-700/50 px-2.5 py-1 rounded-full text-xs">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+              </span>
+              <span className="font-bold text-yellow-400">{viewCount}</span>
+              <span className="text-slate-500 font-medium">คน</span>
+            </div>
             <button 
               onClick={() => setIsOpen(!isOpen)} 
-              className="text-slate-300 hover:text-yellow-400 focus:outline-none p-2"
+              className="text-slate-300 hover:text-yellow-400 focus:outline-none p-2 rounded-xl hover:bg-white/5 transition-all"
+              aria-label="Toggle menu"
             >
-              {isOpen ? <X size={28} /> : <Menu size={28} />}
+              {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
-      <div className={`md:hidden absolute top-20 w-full bg-slate-900 border-b border-slate-800 transition-all duration-300 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
-        <div className="px-4 py-6 space-y-4 shadow-2xl">
-          <div className="flex items-center gap-3 px-4 py-3 bg-slate-950/50 rounded-xl border border-slate-800/80 mb-4">
-            <Eye className="w-5 h-5 text-yellow-400" />
-            <span className="text-slate-300 font-semibold text-sm">คนเข้าดูผล :</span>
-            <span className="text-yellow-400 font-bold ml-auto">{viewCount} คน</span>
-          </div>
+      {/* Mobile Menu */}
+      <div 
+        className={`md:hidden overflow-hidden transition-all duration-400 ease-out ${isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
+        style={{ transitionProperty: 'max-height, opacity' }}
+      >
+        <div className="px-4 py-5 bg-slate-950/98 backdrop-blur-2xl border-t border-white/5 space-y-1">
           <Link 
-            href="/" 
+            href="/#projects" 
             onClick={() => setIsOpen(false)}
-            className="block text-lg font-bold text-slate-300 hover:text-yellow-400 px-4 py-2"
+            className="flex items-center justify-between text-base font-bold text-slate-200 hover:text-yellow-400 px-4 py-3.5 rounded-2xl hover:bg-white/5 transition-all active:scale-[0.98]"
           >
-            Showcase Projects
+            <span className="flex items-center gap-3"><LayoutGrid size={18} /> Showcase Projects</span>
+            <ChevronRight size={16} className="text-slate-600" />
           </Link>
           {settings?.facebook_url && (
             <a 
               href={settings.facebook_url} 
               target="_blank" 
               rel="noreferrer" 
-              className="block text-lg font-bold text-slate-300 hover:text-yellow-400 px-4 py-2"
+              className="flex items-center justify-between text-base font-bold text-slate-200 hover:text-yellow-400 px-4 py-3.5 rounded-2xl hover:bg-white/5 transition-all active:scale-[0.98]"
             >
-              Facebook Fanpage
+              <span className="flex items-center gap-3"><Facebook size={18} /> Facebook Fanpage</span>
+              <ChevronRight size={16} className="text-slate-600" />
             </a>
           )}
           {settings?.contact_email && (
-             <a 
-                href={`mailto:${settings.contact_email}`} 
-                className="block text-lg font-bold text-slate-300 hover:text-yellow-400 px-4 py-2"
-              >
-                Contact Us
-              </a>
+            <a 
+              href={`mailto:${settings.contact_email}`} 
+              className="flex items-center justify-between text-base font-bold text-slate-200 hover:text-yellow-400 px-4 py-3.5 rounded-2xl hover:bg-white/5 transition-all active:scale-[0.98]"
+            >
+              <span className="flex items-center gap-3"><Mail size={18} /> ติดต่อเรา</span>
+              <ChevronRight size={16} className="text-slate-600" />
+            </a>
           )}
           
-          <div className="pt-4 border-t border-slate-800">
+          <div className="pt-3 mt-2 border-t border-white/5">
             <Link 
               href="/admin" 
               onClick={() => setIsOpen(false)}
-              className="w-full flex justify-center items-center gap-2 bg-yellow-400 text-slate-950 px-5 py-4 rounded-xl font-extrabold text-lg mt-2 shadow-[0_0_15px_rgba(250,204,21,0.2)]"
+              className="w-full flex justify-center items-center gap-2.5 bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-950 px-5 py-4 rounded-2xl font-extrabold text-base shadow-[0_0_25px_rgba(250,204,21,0.2)] active:scale-[0.97] transition-all"
             >
               <LogIn size={20} />
               Admin Portal
