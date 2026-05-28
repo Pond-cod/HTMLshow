@@ -192,7 +192,7 @@ export const incrementSiteViews = async (): Promise<string> => {
       // Not found, append row
       await sheets.spreadsheets.values.append({
         spreadsheetId,
-        range: `${SETTINGS_SHEET_NAME}!A:B`,
+        range: `${SETTINGS_SHEET_NAME}!A:A`,
         valueInputOption: "USER_ENTERED",
         requestBody: { values: [["site_views", String(currentViews)]] }
       });
@@ -249,7 +249,7 @@ export const createPendingSettings = async (updates: Partial<SiteSettings>, requ
 
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: `${PENDING_SETTINGS_SHEET_NAME}!A:D`,
+      range: `${PENDING_SETTINGS_SHEET_NAME}!A:A`,
       valueInputOption: "RAW",
       requestBody: { values: rows }
     });

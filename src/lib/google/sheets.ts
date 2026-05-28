@@ -157,7 +157,7 @@ export const addProject = async (projectData: Partial<Project>, userRole?: strin
 
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: `${sheetName}!A:Q`,
+    range: `${sheetName}!A:A`,
     valueInputOption: "USER_ENTERED",
     requestBody: { values },
   });
@@ -362,7 +362,7 @@ export const updateHtmlContent = async (projectId: string, content: string, user
       // Append new row
       await sheets.spreadsheets.values.append({
         spreadsheetId,
-        range: `${sheetName}!A:C`,
+        range: `${sheetName}!A:A`,
         valueInputOption: "RAW",
         requestBody: { values: [[projectId, content, timestamp]] },
       });
@@ -428,7 +428,7 @@ const ensureUsersSheetExists = async (sheets: any, spreadsheetId: string) => {
     const seedPassHashed = await hashPassword(seedPassPlain);
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: `${USERS_SHEET_NAME}!A:C`,
+      range: `${USERS_SHEET_NAME}!A:A`,
       valueInputOption: "USER_ENTERED",
       requestBody: { values: [[seedAdmin, seedPassHashed, "admin"]] },
     });
@@ -470,7 +470,7 @@ export const addUser = async (userData: User): Promise<boolean> => {
     const sheetName = await ensureUsersSheetExists(sheets, spreadsheetId!);
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: `${sheetName}!A:C`,
+      range: `${sheetName}!A:A`,
       valueInputOption: "USER_ENTERED",
       requestBody: { values: [[userData.username, userData.password, userData.role]] },
     });
