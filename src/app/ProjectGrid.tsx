@@ -161,10 +161,10 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
                       href={`/project/${selectedProject.id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-yellow-400 rounded-xl font-medium transition-colors text-xs border border-slate-700"
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-slate-950 rounded-xl font-bold shadow-[0_0_15px_rgba(250,204,21,0.2)] hover:shadow-[0_0_25px_rgba(250,204,21,0.45)] hover:scale-105 active:scale-95 transition-all duration-300 text-xs border border-yellow-500/20"
                       title="เปิดเว็บนี้"
                     >
-                      <ExternalLink size={14} />
+                      <ExternalLink size={14} strokeWidth={2.5} />
                       <span className="hidden sm:inline">เปิดเว็บนี้</span>
                     </a>
                   )}

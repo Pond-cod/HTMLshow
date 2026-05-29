@@ -49,12 +49,12 @@ export default function ProjectViewClient({ project }: { project: Project }) {
         {/* Fullscreen Toggle Button */}
         <button
           onClick={() => setIsHeaderHidden(true)}
-          className={`p-2 hover:bg-gray-800 text-gray-300 hover:text-white rounded-full transition-all flex items-center justify-center shrink-0 ${
+          className={`p-2.5 bg-yellow-500/10 hover:bg-yellow-500 text-yellow-500 hover:text-slate-950 rounded-full border border-yellow-500/30 hover:border-yellow-400 transition-all duration-300 hover:scale-110 active:scale-95 shadow-[0_0_10px_rgba(234,179,8,0.1)] hover:shadow-[0_0_20px_rgba(234,179,8,0.3)] flex items-center justify-center shrink-0 ${
             project.last_updated ? "" : "ml-auto"
           }`}
           title="Hide Header (Fullscreen)"
         >
-          <Maximize2 size={20} />
+          <Maximize2 size={16} strokeWidth={2.5} />
         </button>
       </header>
 
