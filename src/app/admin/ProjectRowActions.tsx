@@ -12,50 +12,66 @@ export default function ProjectRowActions({ project, userRole, isFirst = false, 
 
   const handleReorder = async (direction: "up" | "down") => {
     setIsUpdating(true);
-    const promise = fetch("/api/admin/projects/reorder", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: project.id,
-        direction,
-      }),
-    });
+    
+    const reorderPromise = async () => {
+      const res = await fetch("/api/admin/projects/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: project.id,
+          direction,
+        }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to move project ${direction}`);
+      }
+      return res.json();
+    };
 
-    toast.promise(promise, {
+    toast.promise(reorderPromise(), {
       loading: `Moving project ${direction}...`,
       success: () => {
         setIsUpdating(false);
         router.refresh();
         return `Project moved ${direction} successfully`;
       },
-      error: () => {
+      error: (err) => {
         setIsUpdating(false);
-        return "Failed to move project";
+        return err.message || "Failed to move project";
       }
     });
   };
 
   const updateStatus = async (newStatus: string) => {
     setIsUpdating(true);
-    const promise = fetch("/api/admin/projects", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: project.id,
-        status: newStatus,
-      }),
-    });
+    
+    const updatePromise = async () => {
+      const res = await fetch("/api/admin/projects", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: project.id,
+          status: newStatus,
+        }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to update project status");
+      }
+      return res.json();
+    };
 
-    toast.promise(promise, {
+    toast.promise(updatePromise(), {
       loading: "Updating status...",
       success: () => {
         setIsUpdating(false);
         router.refresh();
         return `Project status updated to ${newStatus}`;
       },
-      error: () => {
+      error: (err) => {
         setIsUpdating(false);
-        return "Failed to update project status";
+        return err.message || "Failed to update project status";
       }
     });
   };
@@ -63,22 +79,30 @@ export default function ProjectRowActions({ project, userRole, isFirst = false, 
   const deleteProject = async () => {
     if (!confirm("Are you sure you want to delete this project?")) return;
     setIsUpdating(true);
-    const promise = fetch("/api/admin/projects", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: project.id }),
-    });
+    
+    const deletePromise = async () => {
+      const res = await fetch("/api/admin/projects", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: project.id }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to delete project");
+      }
+      return res.json();
+    };
 
-    toast.promise(promise, {
+    toast.promise(deletePromise(), {
       loading: "Deleting project...",
       success: () => {
         setIsUpdating(false);
         router.refresh();
         return "Project deleted successfully.";
       },
-      error: () => {
+      error: (err) => {
         setIsUpdating(false);
-        return "Failed to delete project";
+        return err.message || "Failed to delete project";
       }
     });
   };
