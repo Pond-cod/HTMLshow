@@ -162,10 +162,10 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-yellow-400 rounded-xl font-medium transition-colors text-xs border border-slate-700"
-                      title="Open in New Tab"
+                      title="เปิดเว็บนี้"
                     >
                       <ExternalLink size={14} />
-                      <span className="hidden sm:inline">New Tab</span>
+                      <span className="hidden sm:inline">เปิดเว็บนี้</span>
                     </a>
                   )}
                   <button
