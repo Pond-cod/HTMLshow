@@ -38,10 +38,10 @@ export default function ProjectViewClient({ project }: { project: Project }) {
         <Link href="/" className="mr-4 hover:bg-gray-800 p-2 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </Link>
-        <h1 className="text-base sm:text-xl font-bold truncate mr-2">{project.title}</h1>
+        <h1 className="text-base sm:text-xl font-bold truncate mr-2 max-w-[35%] sm:max-w-[45%]">{project.title}</h1>
         
         {project.last_updated && (
-          <div className="text-xs sm:text-sm text-gray-400 shrink-0 ml-auto mr-4">
+          <div className="text-xs sm:text-sm text-gray-400 shrink-0 ml-auto mr-4 max-w-[25%] sm:max-w-[35%] truncate">
             <span className="hidden sm:inline">Updated: </span>{new Date(project.last_updated).toLocaleDateString()}
           </div>
         )}
@@ -49,12 +49,10 @@ export default function ProjectViewClient({ project }: { project: Project }) {
         {/* Fullscreen Toggle Button */}
         <button
           onClick={() => setIsHeaderHidden(true)}
-          className={`p-2.5 bg-yellow-500/10 hover:bg-yellow-500 text-yellow-500 hover:text-slate-950 rounded-full border border-yellow-500/30 hover:border-yellow-400 transition-all duration-300 hover:scale-110 active:scale-95 shadow-[0_0_10px_rgba(234,179,8,0.1)] hover:shadow-[0_0_20px_rgba(234,179,8,0.3)] flex items-center justify-center shrink-0 ${
-            project.last_updated ? "" : "ml-auto"
-          }`}
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 p-3 bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-500 hover:from-yellow-300 hover:via-amber-300 hover:to-orange-400 text-slate-950 rounded-full border-2 border-yellow-300/40 hover:border-yellow-200 transition-all duration-300 hover:scale-110 active:scale-95 shadow-[0_0_15px_rgba(251,191,36,0.5)] hover:shadow-[0_0_25px_rgba(245,158,11,0.8)] flex items-center justify-center shrink-0"
           title="Hide Header (Fullscreen)"
         >
-          <Maximize2 size={16} strokeWidth={2.5} />
+          <Maximize2 size={20} strokeWidth={3} />
         </button>
       </header>
 
