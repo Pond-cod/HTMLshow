@@ -24,9 +24,9 @@ export default async function ProjectPage({
         <Link href="/" className="mr-4 hover:bg-gray-800 p-2 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </Link>
-        <h1 className="text-xl font-bold truncate">{project.title}</h1>
-        <div className="ml-auto text-sm text-gray-400">
-          Updated: {new Date(project.last_updated).toLocaleDateString()}
+        <h1 className="text-base sm:text-xl font-bold truncate mr-2">{project.title}</h1>
+        <div className="ml-auto text-xs sm:text-sm text-gray-400 shrink-0">
+          <span className="hidden sm:inline">Updated: </span>{new Date(project.last_updated).toLocaleDateString()}
         </div>
       </header>
 

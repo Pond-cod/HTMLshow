@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Kanit, Prompt, Sarabun, Mitr } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -9,10 +9,21 @@ const prompt = Prompt({ subsets: ["thai", "latin"], weight: ["200", "300", "400"
 const sarabun = Sarabun({ subsets: ["thai", "latin"], weight: ["200", "300", "400", "500", "600", "700"], variable: '--font-sarabun' });
 const mitr = Mitr({ subsets: ["thai", "latin"], weight: ["200", "300", "400", "500", "600", "700"], variable: '--font-mitr' });
 
+export const viewport: Viewport = {
+  themeColor: "#020617",
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata: Metadata = {
   title: "HTML Showcase Portal",
   description: "A fast, secure, and fully customizable HTML CMS and Showcase Portal.",
   keywords: ["HTML", "CMS", "Showcase", "Portal", "Google Apps Script", "Web App"],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "DeeDevIOT",
+  },
   openGraph: {
     title: "HTML Showcase Portal",
     description: "A fast, secure, and fully customizable HTML CMS and Showcase Portal.",
