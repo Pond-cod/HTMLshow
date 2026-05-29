@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, X, ExternalLink, BookOpen, PlayCircle, Maximize2, Link2 } from "lucide-react";
 import Image from "next/image";
@@ -25,6 +26,11 @@ interface Project {
 
 export default function ProjectGrid({ projects }: { projects: Project[] }) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Prevent scrolling + handle Escape key when modal is open
   useEffect(() => {
@@ -119,9 +125,10 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
       ))}
       </div>
 
-      {/* Full-Screen Modal */}
-      <AnimatePresence>
-        {selectedProject && (
+      {/* Full-Screen Modal rendered via React Portal to completely escape parent z-index stacking contexts */}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {selectedProject && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -248,6 +255,8 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
                     src={selectedProject.html_drive_id.startsWith('http') ? selectedProject.html_drive_id : `/api/proxy-html?id=${selectedProject.html_drive_id}`}
                     title={selectedProject.title}
                     className="w-full h-full border-0 absolute inset-0 bg-white"
+                    scrolling="yes"
+                    style={{ overflow: "auto", WebkitOverflowScrolling: "touch" }}
                     sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-top-navigation-by-user-activation"
                   />
                 ) : (
@@ -263,7 +272,9 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
     </>
   );
 }

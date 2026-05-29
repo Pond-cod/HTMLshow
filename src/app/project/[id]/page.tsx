@@ -86,7 +86,8 @@ export default async function ProjectPage({
             src={project.html_drive_id.startsWith('http') ? project.html_drive_id : `/api/proxy-html?id=${project.html_drive_id}`}
             title={project.title}
             className="w-full flex-1 border-0 bg-white"
-            style={{ minHeight: 0 }}
+            scrolling="yes"
+            style={{ minHeight: 0, overflow: "auto", WebkitOverflowScrolling: "touch" }}
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-top-navigation-by-user-activation"
           />
         ) : (
