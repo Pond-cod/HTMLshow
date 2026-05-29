@@ -268,6 +268,79 @@ export const deleteProject = async (id: string): Promise<boolean> => {
   return true;
 };
 
+export const reorderProject = async (id: string, direction: "up" | "down"): Promise<boolean> => {
+  const spreadsheetId = getSheetId();
+  const sheets = getSheetsClient();
+  
+  const sheetName = await getFirstSheetName(sheets, spreadsheetId!);
+  
+  const response = await sheets.spreadsheets.get({
+    spreadsheetId,
+    includeGridData: false
+  });
+  
+  const sheetId = response.data.sheets?.[0]?.properties?.sheetId;
+  
+  const valuesResponse = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: `${sheetName}!A2:Q`,
+  });
+  
+  const rows = valuesResponse.data.values || [];
+  const rowIndex = rows.findIndex(row => row[0] === id);
+  
+  if (rowIndex === -1 || sheetId === undefined) return false;
+  
+  const sheetRow = rowIndex + 1; // 0-indexed sheet row index (skipping header)
+  
+  if (direction === "up") {
+    if (rowIndex === 0) return false; // Already at the top
+    
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          {
+            moveDimension: {
+              source: {
+                sheetId: sheetId,
+                dimension: "ROWS",
+                startIndex: sheetRow,
+                endIndex: sheetRow + 1
+              },
+              destinationIndex: sheetRow - 1
+            }
+          }
+        ]
+      }
+    });
+  } else if (direction === "down") {
+    if (rowIndex === rows.length - 1) return false; // Already at the bottom
+    
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          {
+            moveDimension: {
+              source: {
+                sheetId: sheetId,
+                dimension: "ROWS",
+                startIndex: sheetRow,
+                endIndex: sheetRow + 1
+              },
+              destinationIndex: sheetRow + 2
+            }
+          }
+        ]
+      }
+    });
+  }
+  
+  return true;
+};
+
+
 // Helper to ensure 'HTML_Code' sheet exists
 const HTML_SHEET_NAME = "HTML_Code";
 

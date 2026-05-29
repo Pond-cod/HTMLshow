@@ -52,7 +52,7 @@ export default async function AdminProjectsPage() {
                   </td>
                 </tr>
               ) : (
-                projects.map((project) => (
+                projects.map((project, index) => (
                   <tr key={project.id} className="hover:bg-slate-800/50 transition-colors group rounded-2xl">
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-4">
@@ -89,7 +89,12 @@ export default async function AdminProjectsPage() {
                       {project.last_updated ? new Date(project.last_updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown Origin'}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <ProjectRowActions project={project} userRole={userRole} />
+                      <ProjectRowActions 
+                        project={project} 
+                        userRole={userRole} 
+                        isFirst={index === 0} 
+                        isLast={index === projects.length - 1} 
+                      />
                     </td>
                   </tr>
                 ))
