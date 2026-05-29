@@ -30,7 +30,7 @@ export default async function ProjectPage({
         </div>
       </header>
 
-      <main className="flex-1 w-full mt-[73px] flex flex-col">
+      <main className="flex-1 w-full mt-[73px] flex flex-col overflow-y-auto">
         {/* Highlight Resources Bar */}
         {(project.manual_url || project.learning_url) && (
           <div className="flex flex-wrap items-center gap-4 p-4 border-b border-white/5 bg-gray-900/80 backdrop-blur-md shrink-0">
@@ -85,9 +85,9 @@ export default async function ProjectPage({
           <iframe
             src={project.html_drive_id.startsWith('http') ? project.html_drive_id : `/api/proxy-html?id=${project.html_drive_id}`}
             title={project.title}
-            className="w-full flex-1 border-0 bg-white"
+            className="w-full min-h-[750px] sm:min-h-[850px] border-0 bg-white"
             scrolling="yes"
-            style={{ minHeight: 0, overflow: "auto", WebkitOverflowScrolling: "touch" }}
+            style={{ overflow: "auto", WebkitOverflowScrolling: "touch" }}
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-top-navigation-by-user-activation"
           />
         ) : (

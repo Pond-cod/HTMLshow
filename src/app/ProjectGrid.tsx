@@ -249,12 +249,12 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
               )}
 
               {/* Modal Content (Iframe) */}
-              <div className="flex-1 bg-slate-950 relative w-full overflow-hidden min-h-0">
+              <div className="flex-1 bg-slate-950 relative w-full overflow-y-auto min-h-0">
                 {selectedProject.html_drive_id ? (
                   <iframe
                     src={selectedProject.html_drive_id.startsWith('http') ? selectedProject.html_drive_id : `/api/proxy-html?id=${selectedProject.html_drive_id}`}
                     title={selectedProject.title}
-                    className="w-full h-full border-0 absolute inset-0 bg-white"
+                    className="w-full min-h-[750px] sm:min-h-[850px] border-0 bg-white"
                     scrolling="yes"
                     style={{ overflow: "auto", WebkitOverflowScrolling: "touch" }}
                     sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-top-navigation-by-user-activation"
