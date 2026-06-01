@@ -408,12 +408,12 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
                   }}
                 />
               ) : (
-                <iframe
+                  <iframe
                   title="Live Preview"
                   className="w-full h-full border-0 bg-white"
                   srcDoc={formData.html_drive_id.startsWith('http') ? undefined : (htmlContent || "<div style='padding:40px;text-align:center;font-family:sans-serif;color:#888;'><h2>No HTML Source Available</h2><p>Upload a .html file or type some code in the Code tab to see the preview here!</p></div>")}
                   src={formData.html_drive_id.startsWith('http') ? formData.html_drive_id : undefined}
-                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-top-navigation-by-user-activation"
+                  {...(!formData.html_drive_id.startsWith('http') ? { sandbox: "allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-top-navigation-by-user-activation" } : {})}
                 />
               )}
             </div>

@@ -129,7 +129,7 @@ export default function ProjectViewClient({ project }: { project: Project }) {
             className="w-full min-h-[750px] sm:min-h-[850px] border-0 bg-white flex-1"
             scrolling="yes"
             style={{ overflow: "auto", WebkitOverflowScrolling: "touch" }}
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-top-navigation-by-user-activation"
+            {...(!project.html_drive_id.startsWith('http') ? { sandbox: "allow-scripts allow-same-origin allow-forms allow-popups allow-downloads allow-top-navigation-by-user-activation" } : {})}
           />
         ) : (
           <div className="flex items-center justify-center flex-1 text-gray-500">
