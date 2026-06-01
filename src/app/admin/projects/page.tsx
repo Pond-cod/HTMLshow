@@ -23,13 +23,22 @@ export default async function AdminProjectsPage() {
           <p className="text-slate-400 mt-2 font-medium">Manage your showcase deployments</p>
         </div>
         {userRole !== 'approver' && (
-          <Link 
-            href="/admin/edit/new" 
-            className="bg-yellow-400 hover:bg-yellow-500 text-slate-950 px-6 py-3 rounded-2xl font-bold shadow-[0_0_20px_rgba(250,204,21,0.4)] flex items-center gap-2 transition-all hover:scale-105"
-          >
-            <Plus size={20} strokeWidth={3} />
-            New Project
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link 
+              href="/admin/edit/new?type=html" 
+              className="bg-yellow-400 hover:bg-yellow-500 text-slate-950 px-5 py-3 rounded-2xl font-bold shadow-[0_0_20px_rgba(250,204,21,0.3)] flex items-center gap-2 transition-all hover:scale-105 text-sm sm:text-base"
+            >
+              <Plus size={18} strokeWidth={3} />
+              New HTML Project
+            </Link>
+            <Link 
+              href="/admin/edit/new?type=gas" 
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-2xl font-bold shadow-[0_0_20px_rgba(37,99,235,0.3)] flex items-center gap-2 transition-all hover:scale-105 text-sm sm:text-base border border-blue-500/20"
+            >
+              <Plus size={18} strokeWidth={3} />
+              New Apps Script Project
+            </Link>
+          </div>
         )}
       </div>
 

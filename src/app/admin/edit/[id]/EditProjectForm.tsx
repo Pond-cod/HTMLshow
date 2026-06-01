@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Editor from "@monaco-editor/react";
 import { Save, UploadCloud, Loader2, Link as LinkIcon, Clock } from "lucide-react";
 
 export default function EditProjectForm({ initialProject }: { initialProject: any }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const typeParam = searchParams ? searchParams.get("type") : null;
+
   const [formData, setFormData] = useState({
     title: initialProject?.title || "",
     image_url: initialProject?.image_url || "",
@@ -25,6 +28,10 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
     other_url: initialProject?.other_url || "",
   });
   
+  const [projectType, setProjectType] = useState<"html" | "gas">(
+    typeParam === 'gas' ? 'gas' : (initialProject?.html_drive_id?.startsWith('http') ? 'gas' : 'html')
+  );
+
   const [htmlContent, setHtmlContent] = useState("");
   const [isLoadingHtml, setIsLoadingHtml] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -67,6 +74,17 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
     };
     fetchHtml();
   }, [initialProject?.html_drive_id]);
+
+  useEffect(() => {
+    if (projectType === 'gas') {
+      const urlVal = formData.html_drive_id || 'https://script.google.com/macros/s/.../exec';
+      setHtmlContent(`<!-- External URL detected: \n\n${urlVal}\n\nCheck the Live Preview tab. -->`);
+    } else {
+      if (htmlContent.includes('External URL detected')) {
+        setHtmlContent('');
+      }
+    }
+  }, [projectType, formData.html_drive_id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     let value = e.target.value;
@@ -193,6 +211,26 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
           <div className="bg-slate-900/50 backdrop-blur-xl rounded-3xl p-8 border border-slate-800 shadow-2xl space-y-5">
             <h2 className="text-xl font-bold text-white mb-4 border-b border-slate-800/80 pb-4">Basic Info</h2>
             
+            <div>
+              <label className="block text-sm font-semibold text-slate-300 mb-2">Project Type</label>
+              <div className="flex bg-slate-850 rounded-xl p-1 border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setProjectType('html')}
+                  className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${projectType === 'html' ? 'bg-yellow-400 text-slate-950 shadow-md font-bold' : 'text-slate-400 hover:text-white'}`}
+                >
+                  HTML File
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProjectType('gas')}
+                  className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${projectType === 'gas' ? 'bg-blue-600 text-white shadow-md font-bold' : 'text-slate-400 hover:text-white'}`}
+                >
+                  Apps Script
+                </button>
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-semibold text-slate-300 mb-2">Title</label>
               <input
@@ -332,13 +370,15 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
               
               <div className="flex items-center gap-3">
                 <div className="flex bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden focus-within:border-yellow-400 transition-colors">
-                  <span className="bg-slate-800 text-slate-400 font-bold text-xs px-3 py-2 flex items-center border-r border-slate-700 uppercase tracking-widest">Drive ID</span>
+                  <span className="bg-slate-800 text-slate-400 font-bold text-xs px-3 py-2 flex items-center border-r border-slate-700 uppercase tracking-widest">
+                    {projectType === 'gas' ? 'Apps Script URL' : 'Drive ID'}
+                  </span>
                   <input
                     type="text"
                     value={formData.html_drive_id}
                     onChange={(e) => {
                       let val = e.target.value.trim();
-                      if (val.includes('drive.google.com')) {
+                      if (projectType === 'html' && val.includes('drive.google.com')) {
                         const match1 = val.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
                         if (match1 && match1[1]) val = match1[1];
                         const match2 = val.match(/id=([a-zA-Z0-9_-]+)/);
@@ -346,44 +386,46 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
                       }
                       setFormData(prev => ({ ...prev, html_drive_id: val }));
                     }}
-                    placeholder="Paste URL, App Script, or ID here..."
-                    className="bg-transparent text-sm font-mono text-yellow-400 w-64 px-3 py-1.5 outline-none"
+                    placeholder={projectType === 'gas' ? "https://script.google.com/macros/s/.../exec" : "Paste URL, App Script, or ID here..."}
+                    className="bg-transparent text-sm font-mono text-yellow-400 w-64 px-3 py-1.5 outline-none text-ellipsis"
                   />
                 </div>
                 
-                {formData.html_drive_id ? (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (formData.html_drive_id.startsWith('http')) {
-                        setHtmlContent(`<!-- External URL detected: \n\n${formData.html_drive_id}\n\nCheck the Live Preview tab. -->`);
-                        return;
-                      }
-                      setIsLoadingHtml(true);
-                      try {
-                        const res = await fetch(`/api/admin/html?id=${formData.html_drive_id}`);
-                        if (res.ok) {
-                          setHtmlContent(await res.text());
-                        } else {
-                          const err = await res.json().catch(() => ({}));
-                          setHtmlContent(`<!-- ERROR: Could not fetch HTML: ${err.message || 'Access Denied'} -->`);
+                {projectType === 'html' && (
+                  formData.html_drive_id ? (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (formData.html_drive_id.startsWith('http')) {
+                          setHtmlContent(`<!-- External URL detected: \n\n${formData.html_drive_id}\n\nCheck the Live Preview tab. -->`);
+                          return;
                         }
-                      } catch (e: any) {
-                        setHtmlContent(`<!-- Error: ${e.message} -->`);
-                      } finally {
-                        setIsLoadingHtml(false);
-                      }
-                    }}
-                    className="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-4 py-2 rounded-xl font-bold transition-all whitespace-nowrap shadow-md focus:border-yellow-400"
-                  >
-                    Load File
-                  </button>
-                ) : (
-                  <label className="cursor-pointer bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-colors flex items-center gap-2 whitespace-nowrap">
-                    {uploadingField === "html_drive_id" ? <Loader2 className="w-4 h-4 animate-spin text-yellow-400" /> : <UploadCloud className="w-4 h-4 text-yellow-400" />}
-                    Upload File
-                    <input type="file" className="hidden" accept=".html,text/html" onChange={(e) => handleFileUpload(e, "html_drive_id")} />
-                  </label>
+                        setIsLoadingHtml(true);
+                        try {
+                          const res = await fetch(`/api/admin/html?id=${formData.html_drive_id}`);
+                          if (res.ok) {
+                            setHtmlContent(await res.text());
+                          } else {
+                            const err = await res.json().catch(() => ({}));
+                            setHtmlContent(`<!-- ERROR: Could not fetch HTML: ${err.message || 'Access Denied'} -->`);
+                          }
+                        } catch (e: any) {
+                          setHtmlContent(`<!-- Error: ${e.message} -->`);
+                        } finally {
+                          setIsLoadingHtml(false);
+                        }
+                      }}
+                      className="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-4 py-2 rounded-xl font-bold transition-all whitespace-nowrap shadow-md focus:border-yellow-400"
+                    >
+                      Load File
+                    </button>
+                  ) : (
+                    <label className="cursor-pointer bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-colors flex items-center gap-2 whitespace-nowrap">
+                      {uploadingField === "html_drive_id" ? <Loader2 className="w-4 h-4 animate-spin text-yellow-400" /> : <UploadCloud className="w-4 h-4 text-yellow-400" />}
+                      Upload File
+                      <input type="file" className="hidden" accept=".html,text/html" onChange={(e) => handleFileUpload(e, "html_drive_id")} />
+                    </label>
+                  )
                 )}
               </div>
             </div>
@@ -391,22 +433,26 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
             <div className="flex-1 relative bg-[#1e1e1e]">
               {isLoadingHtml ? (
                 <div className="absolute inset-0 flex items-center justify-center text-gray-400 gap-3 bg-[#1e1e1e] z-10">
-                  <Loader2 className="w-6 h-6 animate-spin" /> Fetching raw source from Drive...
+                  <Loader2 className="w-6 h-6 animate-spin" /> Fetching raw source...
                 </div>
               ) : activeTab === 'editor' ? (
-                <Editor
-                  height="100%"
-                  defaultLanguage="html"
-                  theme="vs-dark"
-                  value={htmlContent}
-                  onChange={(val: string | undefined) => setHtmlContent(val || "")}
-                  options={{
-                    minimap: { enabled: false },
-                    fontSize: 14,
-                    wordWrap: "on",
-                    padding: { top: 16 }
-                  }}
-                />
+                projectType === 'gas' ? (
+                  <GasGuidePanel />
+                ) : (
+                  <Editor
+                    height="100%"
+                    defaultLanguage="html"
+                    theme="vs-dark"
+                    value={htmlContent}
+                    onChange={(val: string | undefined) => setHtmlContent(val || "")}
+                    options={{
+                      minimap: { enabled: false },
+                      fontSize: 14,
+                      wordWrap: "on",
+                      padding: { top: 16 }
+                    }}
+                  />
+                )
               ) : (
                   <iframe
                   title="Live Preview"
@@ -434,5 +480,72 @@ function UploadButton({ field, uploadingField, onUpload, accept, label = "Upload
       {isUploading ? "Uploading..." : label}
       <input type="file" className="hidden" accept={accept} onChange={(e) => onUpload(e, field)} disabled={isUploading} />
     </label>
+  );
+}
+
+function GasGuidePanel() {
+  const codeToCopy = `function doGet(e) {
+  return HtmlService.createHtmlOutputFromFile('Index')
+    .setTitle('ระบบจัดการ - DeeDevIOT')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(codeToCopy);
+    alert("คัดลอกโค้ดไปยังคลิปบอร์ดแล้ว!");
+  };
+
+  return (
+    <div className="h-full overflow-y-auto p-6 bg-slate-950 text-slate-100 font-sans space-y-5">
+      <div className="border-b border-slate-800 pb-3">
+        <h3 className="text-lg font-bold text-yellow-400">Google Apps Script Integration Guide</h3>
+        <p className="text-xs text-slate-400 mt-1">ทำตามขั้นตอนด้านล่างเพื่อนำ Google Apps Script ของคุณมาแสดงผลบนเว็บไซต์</p>
+      </div>
+
+      <div className="space-y-5">
+        <div className="flex gap-3">
+          <div className="w-6 h-6 rounded-full bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center shrink-0 font-mono text-xs font-bold text-yellow-400">1</div>
+          <div className="space-y-1.5 flex-1">
+            <h4 className="text-sm font-bold text-slate-200">แก้ไขฟังก์ชัน doGet() ใน Apps Script</h4>
+            <p className="text-xs text-slate-400">เปิดสคริปต์ของคุณและเพิ่ม <code className="text-yellow-400">.setXFrameOptionsMode(...)</code> เพื่ออนุญาตให้แสดงผลใน iframe:</p>
+            <div className="relative group bg-slate-900 border border-slate-800 rounded-xl overflow-hidden mt-1.5">
+              <pre className="p-3 text-[10px] sm:text-xs font-mono text-emerald-400 overflow-x-auto leading-relaxed">
+                {codeToCopy}
+              </pre>
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="absolute top-2 right-2 text-[10px] bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-2.5 py-1 rounded-md font-bold transition-all"
+              >
+                Copy Code
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-3 border-t border-slate-800/60 pt-3">
+          <div className="w-6 h-6 rounded-full bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center shrink-0 font-mono text-xs font-bold text-yellow-400">2</div>
+          <div className="space-y-1 flex-1">
+            <h4 className="text-sm font-bold text-slate-200">สร้างการให้บริการ (New Deployment)</h4>
+            <ul className="list-disc list-inside text-xs text-slate-400 space-y-1">
+              <li>คลิกปุ่ม <strong className="text-slate-300">Deploy (การทำให้ใช้งานได้)</strong> &gt; <strong className="text-slate-300">New deployment</strong></li>
+              <li>เลือกประเภทเป็น <strong className="text-slate-300">Web app (เว็บแอป)</strong></li>
+              <li>ตั้งค่า <strong className="text-slate-300">Execute as (เรียกใช้ในฐานะ)</strong> เป็น <strong className="text-slate-300">Me (ฉัน)</strong></li>
+              <li>ตั้งค่า <strong className="text-slate-300">Who has access (ผู้มีสิทธิ์เข้าถึง)</strong> เป็น <strong className="text-slate-300">Anyone (ทุกคน)</strong></li>
+              <li>กด <strong className="text-slate-300">Deploy</strong> และคัดลอก **Web app URL**</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="flex gap-3 border-t border-slate-800/60 pt-3">
+          <div className="w-6 h-6 rounded-full bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center shrink-0 font-mono text-xs font-bold text-yellow-400">3</div>
+          <div className="space-y-1 flex-1">
+            <h4 className="text-sm font-bold text-slate-200">วาง URL ในระบบ</h4>
+            <p className="text-xs text-slate-400">วางลิงก์ที่คัดลอกมาใส่ในช่อง <strong className="text-yellow-400">Apps Script URL</strong> ด้านบน แล้วกดบันทึกโปรเจกต์</p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
