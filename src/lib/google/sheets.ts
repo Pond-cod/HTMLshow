@@ -155,12 +155,49 @@ export const addProject = async (projectData: Partial<Project>, userRole?: strin
     ]
   ];
 
-  await sheets.spreadsheets.values.append({
+  const response = await sheets.spreadsheets.get({
     spreadsheetId,
-    range: `${sheetName}!A:A`,
-    valueInputOption: "USER_ENTERED",
-    requestBody: { values },
+    includeGridData: false
   });
+  const sheetId = response.data.sheets?.[0]?.properties?.sheetId;
+
+  if (sheetId !== undefined) {
+    // Insert a new row at row index 1 (second row, right after headers)
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          {
+            insertDimension: {
+              range: {
+                sheetId: sheetId,
+                dimension: "ROWS",
+                startIndex: 1,
+                endIndex: 2
+              },
+              inheritFromBefore: false
+            }
+          }
+        ]
+      }
+    });
+
+    // Update the newly inserted row at A2:Q2
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${sheetName}!A2:Q2`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: { values },
+    });
+  } else {
+    // Fallback: append if sheetId is somehow not found
+    await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: `${sheetName}!A:A`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: { values },
+    });
+  }
 
   return newProject;
 };
