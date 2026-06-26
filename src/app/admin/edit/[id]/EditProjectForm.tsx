@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Editor from "@monaco-editor/react";
-import { Save, UploadCloud, Loader2, Link as LinkIcon, Clock } from "lucide-react";
+import { Save, UploadCloud, Loader2, Link as LinkIcon, Clock, Download } from "lucide-react";
 
 export default function EditProjectForm({ initialProject }: { initialProject: any }) {
   const router = useRouter();
@@ -182,6 +182,19 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleDownload = () => {
+    if (!htmlContent) return;
+    const blob = new Blob([htmlContent], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${formData.title || "project"}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const isAdminUser = userRole === 'adminuser';
@@ -426,6 +439,16 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
                       <input type="file" className="hidden" accept=".html,text/html" onChange={(e) => handleFileUpload(e, "html_drive_id")} />
                     </label>
                   )
+                )}
+                {projectType === 'html' && htmlContent && (
+                  <button
+                    type="button"
+                    onClick={handleDownload}
+                    className="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 text-yellow-400 px-4 py-2 rounded-xl font-bold transition-all whitespace-nowrap shadow-md focus:border-yellow-400 flex items-center gap-1.5"
+                  >
+                    <Download size={14} className="text-yellow-400" />
+                    Download Code
+                  </button>
                 )}
               </div>
             </div>

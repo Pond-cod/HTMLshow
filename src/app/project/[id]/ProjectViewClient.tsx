@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, PlayCircle, Maximize2, Minimize2 } from "lucide-react";
+import { ArrowLeft, BookOpen, PlayCircle, Maximize2, Minimize2, Download } from "lucide-react";
 import Image from "next/image";
 import { cleanImageUrl } from "@/lib/utils";
 
@@ -26,6 +26,29 @@ interface Project {
 
 export default function ProjectViewClient({ project }: { project: Project }) {
   const [isHeaderHidden, setIsHeaderHidden] = useState(false);
+
+  const handleDownload = async (id: string, title: string) => {
+    try {
+      const res = await fetch(`/api/proxy-html?id=${id}`);
+      if (res.ok) {
+        const htmlText = await res.text();
+        const blob = new Blob([htmlText], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${title || "project"}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } else {
+        alert("Failed to download code.");
+      }
+    } catch (error) {
+      console.error("Error downloading code:", error);
+      alert("Error downloading code.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col relative overflow-hidden">
@@ -73,7 +96,7 @@ export default function ProjectViewClient({ project }: { project: Project }) {
         }`}
       >
         {/* Highlight Resources Bar */}
-        {(project.manual_url || project.learning_url || project.other_url) && (
+        {(project.manual_url || project.learning_url || project.other_url || (project.html_drive_id && !project.html_drive_id.startsWith('http'))) && (
           <div className="flex flex-wrap items-center gap-4 p-4 border-b border-white/5 bg-gray-900/80 backdrop-blur-md shrink-0">
             {project.manual_url && (
               <a
@@ -95,6 +118,20 @@ export default function ProjectViewClient({ project }: { project: Project }) {
                   {project.manual_text || "คู่มือการใช้งาน"}
                 </span>
               </a>
+            )}
+
+            {project.html_drive_id && !project.html_drive_id.startsWith('http') && (
+              <button
+                onClick={() => handleDownload(project.html_drive_id!, project.title)}
+                className="group relative flex items-center gap-3 overflow-hidden rounded-xl border border-cyan-500/30 bg-gray-800/80 p-2 pr-4 transition-all hover:border-cyan-400 hover:bg-gray-800 shadow-md hover:shadow-cyan-500/20 active:scale-[0.97]"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-400 shrink-0">
+                  <Download size={20} />
+                </div>
+                <span className="font-semibold text-gray-200 group-hover:text-cyan-400 text-sm">
+                  ดาวน์โหลด Code
+                </span>
+              </button>
             )}
 
             {project.learning_url && (
