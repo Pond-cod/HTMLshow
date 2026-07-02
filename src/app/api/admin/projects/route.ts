@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addProject, updateProject, deleteProject } from "@/lib/google/sheets";
 import { getSession } from "@/lib/auth";
+import { revalidatePath } from "next/cache";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,6 +10,10 @@ export async function POST(request: NextRequest) {
     
     const data = await request.json();
     const newProject = await addProject(data, role);
+    
+    // Invalidate main cache
+    revalidatePath("/", "layout");
+    
     return NextResponse.json({ success: true, project: newProject });
   } catch (error: any) {
     console.error("Error creating project:", error);
@@ -29,6 +34,11 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ success: false, message: "Missing ID" }, { status: 400 });
     }
     const ok = await updateProject(id, data, role);
+    if (ok) {
+      // Invalidate caches
+      revalidatePath("/", "layout");
+      revalidatePath(`/project/${id}`);
+    }
     return NextResponse.json({ success: ok });
   } catch (error) {
     console.error("Error updating project:", error);
@@ -52,6 +62,11 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ success: false, message: "Missing ID" }, { status: 400 });
     }
     const ok = await deleteProject(id);
+    if (ok) {
+      // Invalidate caches
+      revalidatePath("/", "layout");
+      revalidatePath(`/project/${id}`);
+    }
     return NextResponse.json({ success: ok });
   } catch (error) {
     console.error("Error deleting project:", error);
@@ -61,3 +76,4 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
+

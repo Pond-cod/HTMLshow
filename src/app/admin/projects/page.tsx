@@ -50,13 +50,14 @@ export default async function AdminProjectsPage() {
                 <th className="px-4 sm:px-6 py-5">Project Focus</th>
                 <th className="px-4 sm:px-6 py-5">Status</th>
                 <th className="px-4 sm:px-6 py-5 hidden md:table-cell">Last Updated</th>
+                <th className="px-4 sm:px-6 py-5 hidden sm:table-cell">Downloads</th>
                 <th className="px-4 sm:px-6 py-5 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="text-slate-200">
               {projects.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-16 text-center text-slate-500 font-medium">
+                  <td colSpan={5} className="px-6 py-16 text-center text-slate-500 font-medium">
                     No projects deployed yet. Launch your first build.
                   </td>
                 </tr>
@@ -96,6 +97,9 @@ export default async function AdminProjectsPage() {
                     </td>
                     <td className="px-4 sm:px-6 py-5 hidden md:table-cell whitespace-nowrap text-sm text-slate-400 font-medium">
                       {project.last_updated ? new Date(project.last_updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown Origin'}
+                    </td>
+                    <td className="px-4 sm:px-6 py-5 hidden sm:table-cell whitespace-nowrap text-sm text-slate-400 font-medium">
+                      {project.download_count || 0}
                     </td>
                     <td className="px-4 sm:px-6 py-4 text-right">
                       <ProjectRowActions 

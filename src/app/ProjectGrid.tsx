@@ -6,49 +6,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, X, ExternalLink, BookOpen, PlayCircle, Maximize2, Link2, Download } from "lucide-react";
 import Image from "next/image";
 import { cleanImageUrl } from "@/lib/utils";
-
-interface Project {
-  id: string;
-  title: string;
-  thumbnail_url?: string;
-  html_drive_id?: string;
-  last_updated?: string;
-  manual_text?: string;
-  manual_image_url?: string;
-  manual_url?: string;
-  learning_text?: string;
-  learning_image_url?: string;
-  learning_url?: string;
-  other_text?: string;
-  other_image_url?: string;
-  other_url?: string;
-}
+import { Project } from "@/types/project";
+import { downloadProjectCode } from "@/lib/download";
 
 export default function ProjectGrid({ projects }: { projects: Project[] }) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  const handleDownload = async (id: string, title: string) => {
-    try {
-      const res = await fetch(`/api/proxy-html?id=${id}`);
-      if (res.ok) {
-        const htmlText = await res.text();
-        const blob = new Blob([htmlText], { type: "text/html" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${title || "project"}.html`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      } else {
-        alert("Failed to download code.");
-      }
-    } catch (error) {
-      console.error("Error downloading code:", error);
-      alert("Error downloading code.");
-    }
+  const handleDownload = async (projectId: string, driveId: string, title: string) => {
+    await downloadProjectCode(projectId, driveId, title, (newCount) => {
+      setSelectedProject(prev => prev && prev.id === projectId ? { ...prev, download_count: newCount } : prev);
+    });
   };
 
   useEffect(() => {
@@ -227,14 +195,14 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
 
                   {selectedProject.html_drive_id && !selectedProject.html_drive_id.startsWith('http') && (
                     <button
-                      onClick={() => handleDownload(selectedProject.html_drive_id!, selectedProject.title)}
+                      onClick={() => handleDownload(selectedProject.id, selectedProject.html_drive_id!, selectedProject.title)}
                       className="group/res relative flex items-center gap-2 sm:gap-3 overflow-hidden rounded-xl border border-cyan-500/30 bg-slate-800/80 p-1.5 sm:p-2 pr-3 sm:pr-4 transition-all hover:border-cyan-400 hover:bg-slate-800 shadow-md hover:shadow-cyan-500/20 active:scale-[0.97]"
                     >
                       <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-400 shrink-0">
                         <Download size={16} className="sm:w-5 sm:h-5" />
                       </div>
                       <span className="font-semibold text-slate-200 group-hover/res:text-cyan-400 text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">
-                        ดาวน์โหลด Code
+                        ดาวน์โหลด Code {selectedProject.download_count !== undefined && selectedProject.download_count > 0 ? `(${selectedProject.download_count})` : ""}
                       </span>
                     </button>
                   )}

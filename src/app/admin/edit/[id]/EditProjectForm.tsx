@@ -462,19 +462,27 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
                 projectType === 'gas' ? (
                   <GasGuidePanel />
                 ) : (
-                  <Editor
-                    height="100%"
-                    defaultLanguage="html"
-                    theme="vs-dark"
-                    value={htmlContent}
-                    onChange={(val: string | undefined) => setHtmlContent(val || "")}
-                    options={{
-                      minimap: { enabled: false },
-                      fontSize: 14,
-                      wordWrap: "on",
-                      padding: { top: 16 }
-                    }}
-                  />
+                  <div className="h-full flex flex-col">
+                    <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-5 py-3 text-xs text-yellow-300 flex items-center gap-2">
+                      <span className="font-bold uppercase tracking-wider bg-yellow-400/20 px-1.5 py-0.5 rounded text-[10px]">ข้อกำหนดสไตล์</span>
+                      <span>โปรเจกต์จะรันภายใน Sandbox IFrame <b>ห้ามสร้างไฟล์ CSS แยกต่างหาก</b> ให้ใช้ Bootstrap CDN หรือเขียน Inline CSS เท่านั้น</span>
+                    </div>
+                    <div className="flex-1">
+                      <Editor
+                        height="100%"
+                        defaultLanguage="html"
+                        theme="vs-dark"
+                        value={htmlContent}
+                        onChange={(val: string | undefined) => setHtmlContent(val || "")}
+                        options={{
+                          minimap: { enabled: false },
+                          fontSize: 14,
+                          wordWrap: "on",
+                          padding: { top: 16 }
+                        }}
+                      />
+                    </div>
+                  </div>
                 )
               ) : (
                   <iframe

@@ -1,12 +1,12 @@
 export interface Project {
   id: string;
   title: string;
-  image_url: string;
-  VDO_url: string;
-  thumbnail_url: string;
-  html_drive_id: string;
-  last_updated: string;
-  status: 'published' | 'draft' | 'pending';
+  image_url?: string;
+  VDO_url?: string;
+  thumbnail_url?: string;
+  html_drive_id?: string;
+  last_updated?: string;
+  status?: 'published' | 'draft' | 'pending';
   manual_text?: string;
   manual_image_url?: string;
   manual_url?: string;
@@ -16,4 +16,5 @@ export interface Project {
   other_text?: string;
   other_image_url?: string;
   other_url?: string;
+  download_count?: number;
 }

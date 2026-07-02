@@ -53,7 +53,7 @@ export const getAllProjects = async (): Promise<Project[]> => {
   const sheets = getSheetsClient();
   try {
     const sheetName = await getFirstSheetName(sheets, spreadsheetId);
-    const range = `${sheetName}!A2:Q`;
+    const range = `${sheetName}!A2:R`;
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
@@ -79,6 +79,7 @@ export const getAllProjects = async (): Promise<Project[]> => {
       other_text: row[14] || "",
       other_image_url: row[15] || "",
       other_url: row[16] || "",
+      download_count: parseInt(row[17] || "0", 10) || 0,
     }));
   } catch (error: any) {
     console.error("Error fetching projects from sheets:", error?.message);
@@ -131,6 +132,7 @@ export const addProject = async (projectData: Partial<Project>, userRole?: strin
     other_text: projectData.other_text || "",
     other_image_url: projectData.other_image_url || "",
     other_url: projectData.other_url || "",
+    download_count: 0,
   };
 
   const values = [
@@ -151,7 +153,8 @@ export const addProject = async (projectData: Partial<Project>, userRole?: strin
       newProject.learning_url,
       newProject.other_text,
       newProject.other_image_url,
-      newProject.other_url
+      newProject.other_url,
+      newProject.download_count
     ]
   ];
 
@@ -182,10 +185,10 @@ export const addProject = async (projectData: Partial<Project>, userRole?: strin
       }
     });
 
-    // Update the newly inserted row at A2:Q2
+    // Update the newly inserted row at A2:R2
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: `${sheetName}!A2:Q2`,
+      range: `${sheetName}!A2:R2`,
       valueInputOption: "USER_ENTERED",
       requestBody: { values },
     });
@@ -207,7 +210,7 @@ export const updateProject = async (id: string, updateData: Partial<Project>, us
   const sheets = getSheetsClient();
   
   const sheetName = await getFirstSheetName(sheets, spreadsheetId!);
-  const range = `${sheetName}!A2:Q`;
+  const range = `${sheetName}!A2:R`;
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
@@ -247,11 +250,12 @@ export const updateProject = async (id: string, updateData: Partial<Project>, us
     updateData.other_text !== undefined ? updateData.other_text : (existingRow[14] || ""),
     updateData.other_image_url !== undefined ? updateData.other_image_url : (existingRow[15] || ""),
     updateData.other_url !== undefined ? updateData.other_url : (existingRow[16] || ""),
+    updateData.download_count !== undefined ? updateData.download_count : parseInt(existingRow[17] || "0", 10),
   ];
 
   await sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: `${sheetName}!A${sheetRow}:Q${sheetRow}`,
+    range: `${sheetName}!A${sheetRow}:R${sheetRow}`,
     valueInputOption: "USER_ENTERED",
     requestBody: { values: [updatedValues] },
   });
@@ -274,7 +278,7 @@ export const deleteProject = async (id: string): Promise<boolean> => {
   
   const valuesResponse = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: `${sheetName}!A2:Q`,
+    range: `${sheetName}!A2:R`,
   });
   
   const rows = valuesResponse.data.values || [];
@@ -320,7 +324,7 @@ export const reorderProject = async (id: string, direction: "up" | "down"): Prom
   
   const valuesResponse = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: `${sheetName}!A2:Q`,
+    range: `${sheetName}!A2:R`,
   });
   
   const rows = valuesResponse.data.values || [];
@@ -669,5 +673,42 @@ export const updateUser = async (oldUsername: string, newData: { username: strin
 
 export const updateUserRole = async (username: string, newRole: Role, newPassword?: string): Promise<boolean> => {
   return updateUser(username, { username, role: newRole, password: newPassword });
+};
+
+export const incrementProjectDownloads = async (id: string): Promise<number> => {
+  const spreadsheetId = getSheetId();
+  if (!spreadsheetId) return 0;
+
+  const sheets = getSheetsClient();
+  try {
+    const sheetName = await getFirstSheetName(sheets, spreadsheetId);
+    const range = `${sheetName}!A2:R`;
+
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range,
+    });
+
+    const rows = response.data.values || [];
+    const rowIndex = rows.findIndex(row => row[0] === id);
+    if (rowIndex === -1) return 0;
+
+    const sheetRow = rowIndex + 2;
+    const currentDownloads = parseInt(rows[rowIndex][17] || "0", 10);
+    const nextDownloads = currentDownloads + 1;
+
+    // Update only the R column cell for that row (R is the 18th column)
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${sheetName}!R${sheetRow}`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: { values: [[String(nextDownloads)]] },
+    });
+
+    return nextDownloads;
+  } catch (error) {
+    console.error("Failed to increment project downloads:", error);
+    return 0;
+  }
 };
 
