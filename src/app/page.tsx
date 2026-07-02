@@ -13,6 +13,9 @@ export default async function Home() {
     getSiteSettings()
   ]);
 
+  const projectCount = projects.length;
+  const totalDownloads = projects.reduce((sum, p) => sum + (p.download_count || 0), 0);
+
   return (
     <div 
       className="min-h-screen bg-slate-950 text-slate-50 selection:bg-yellow-400 selection:text-slate-950"
@@ -29,7 +32,7 @@ export default async function Home() {
           }
         `}} />
       )}
-      <TopNavbar settings={settings} />
+      <TopNavbar settings={settings} projectCount={projectCount} totalDownloads={totalDownloads} />
 
       {/* Hero Section */}
       <main className="relative overflow-hidden">
@@ -75,6 +78,18 @@ export default async function Home() {
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-slate-400">
                 <Globe className="w-3 h-3 text-blue-400" /> Web Applications
+              </div>
+            </div>
+
+            {/* Stat Counters */}
+            <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto mt-10 w-full relative z-10 px-4">
+              <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-2xl p-4 text-center transition-all duration-300 hover:border-yellow-400/20 shadow-md">
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-1">ผลงานทั้งหมด</span>
+                <span className="text-xl sm:text-2xl font-black text-cyan-400">{projectCount} <span className="text-xs sm:text-sm font-medium text-slate-400 font-normal">รายการ</span></span>
+              </div>
+              <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-2xl p-4 text-center transition-all duration-300 hover:border-yellow-400/20 shadow-md">
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-1">ยอดดาวน์โหลดรวม</span>
+                <span className="text-xl sm:text-2xl font-black text-emerald-400">{totalDownloads} <span className="text-xs sm:text-sm font-medium text-slate-400 font-normal">ครั้ง</span></span>
               </div>
             </div>
           </header>
