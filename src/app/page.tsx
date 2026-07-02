@@ -3,6 +3,7 @@ import { getSiteSettings } from "@/lib/google/settings";
 import ProjectGrid from "./ProjectGrid";
 import TopNavbar from "@/components/TopNavbar";
 import Footer from "@/components/Footer";
+import HeroStats from "@/components/HeroStats";
 import { Sparkles, Zap, Globe, ChevronDown } from "lucide-react";
 
 export const revalidate = 60; // Revalidate every 60 seconds (ISR)
@@ -82,16 +83,7 @@ export default async function Home() {
             </div>
 
             {/* Stat Counters */}
-            <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto mt-10 w-full relative z-10 px-4">
-              <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-2xl p-4 text-center transition-all duration-300 hover:border-yellow-400/20 shadow-md">
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-1">ผลงานทั้งหมด</span>
-                <span className="text-xl sm:text-2xl font-black text-cyan-400">{projectCount} <span className="text-xs sm:text-sm font-medium text-slate-400 font-normal">รายการ</span></span>
-              </div>
-              <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/80 rounded-2xl p-4 text-center transition-all duration-300 hover:border-yellow-400/20 shadow-md">
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-1">ยอดดาวน์โหลดรวม</span>
-                <span className="text-xl sm:text-2xl font-black text-emerald-400">{totalDownloads} <span className="text-xs sm:text-sm font-medium text-slate-400 font-normal">ครั้ง</span></span>
-              </div>
-            </div>
+            <HeroStats projectCount={projectCount} totalDownloads={totalDownloads} />
           </header>
 
           {/* CTA */}

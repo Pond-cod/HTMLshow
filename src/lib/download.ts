@@ -31,6 +31,8 @@ export const downloadProjectCode = async (
           const data = await incRes.json();
           if (data.success && onSuccess) {
             onSuccess(data.count);
+            // Dispatch event to notify other client components (e.g. Navbar, Hero stats)
+            window.dispatchEvent(new CustomEvent("project-downloaded", { detail: { projectId } }));
           }
         }
       } catch (incError) {

@@ -16,6 +16,19 @@ export default function TopNavbar({
   const [isOpen, setIsOpen] = useState(false);
   const [viewCount, setViewCount] = useState<string>(settings?.site_views || "0");
   const [scrolled, setScrolled] = useState(false);
+  const [localDownloads, setLocalDownloads] = useState(totalDownloads);
+
+  useEffect(() => {
+    setLocalDownloads(totalDownloads);
+  }, [totalDownloads]);
+
+  useEffect(() => {
+    const handleDownloadEvent = () => {
+      setLocalDownloads(prev => prev + 1);
+    };
+    window.addEventListener("project-downloaded", handleDownloadEvent);
+    return () => window.removeEventListener("project-downloaded", handleDownloadEvent);
+  }, []);
 
   useEffect(() => {
     const hasTracked = sessionStorage.getItem("view_tracked");
@@ -87,7 +100,7 @@ export default function TopNavbar({
             {/* Downloads Counter */}
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ดาวน์โหลด</span>
-              <span className="text-xs font-black text-emerald-400 bg-slate-950/50 px-2 py-0.5 rounded border border-slate-800/80">{totalDownloads}</span>
+              <span className="text-xs font-black text-emerald-400 bg-slate-950/50 px-2 py-0.5 rounded border border-slate-800/80">{localDownloads}</span>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ครั้ง</span>
             </div>
           </div>
@@ -153,7 +166,7 @@ export default function TopNavbar({
             </div>
             <div className="bg-slate-900/60 border border-slate-800/60 rounded-xl p-2.5 text-center">
               <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">ดาวน์โหลดรวม</span>
-              <span className="text-sm font-black text-emerald-400 mt-0.5 block">{totalDownloads} ครั้ง</span>
+              <span className="text-sm font-black text-emerald-400 mt-0.5 block">{localDownloads} ครั้ง</span>
             </div>
           </div>
           <Link 
