@@ -712,3 +712,105 @@ export const incrementProjectDownloads = async (id: string): Promise<number> => 
   }
 };
 
+export interface DownloadEvent {
+  id: string;
+  project_id: string;
+  project_title: string;
+  timestamp: string;
+  ip_address: string;
+}
+
+const DOWNLOADS_SHEET_NAME = "Downloads";
+
+const ensureDownloadsSheetExists = async (sheets: any, spreadsheetId: string) => {
+  const response = await sheets.spreadsheets.get({
+    spreadsheetId,
+    includeGridData: false,
+  });
+  
+  const existingSheets = response.data.sheets || [];
+  const exists = existingSheets.some((s: any) => s.properties.title === DOWNLOADS_SHEET_NAME);
+  
+  if (!exists) {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          {
+            addSheet: {
+              properties: {
+                title: DOWNLOADS_SHEET_NAME,
+              }
+            }
+          }
+        ]
+      }
+    });
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `${DOWNLOADS_SHEET_NAME}!A1:E1`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: { values: [["id", "project_id", "project_title", "timestamp", "ip_address"]] },
+    });
+  }
+  return DOWNLOADS_SHEET_NAME;
+};
+
+export const logDownloadEvent = async (projectId: string, ipAddress: string): Promise<void> => {
+  const spreadsheetId = getSheetId();
+  if (!spreadsheetId) return;
+
+  const sheets = getSheetsClient();
+  try {
+    const sheetName = await ensureDownloadsSheetExists(sheets, spreadsheetId);
+    
+    // Fetch project title
+    const project = await getProjectById(projectId);
+    const title = project ? project.title : "Unknown Project";
+
+    const downloadId = uuidv4();
+    const timestamp = new Date().toISOString();
+
+    await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: `${sheetName}!A:A`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: {
+        values: [[downloadId, projectId, title, timestamp, ipAddress]]
+      }
+    });
+  } catch (error) {
+    console.error("Failed to log download event:", error);
+  }
+};
+
+export const getAllDownloads = async (): Promise<DownloadEvent[]> => {
+  const spreadsheetId = getSheetId();
+  if (!spreadsheetId) return [];
+
+  const sheets = getSheetsClient();
+  try {
+    const sheetName = await ensureDownloadsSheetExists(sheets, spreadsheetId);
+    const range = `${sheetName}!A2:E`;
+
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range,
+    });
+
+    const rows = response.data.values || [];
+    return rows.map((row) => ({
+      id: row[0] || "",
+      project_id: row[1] || "",
+      project_title: row[2] || "",
+      timestamp: row[3] || "",
+      ip_address: row[4] || ""
+    }));
+  } catch (error: any) {
+    console.error("Error fetching downloads from sheet:", error?.message);
+    return [];
+  }
+};
+
+

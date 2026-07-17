@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Home, Settings2, Menu, X, Users } from "lucide-react";
+import { LayoutDashboard, Home, Settings2, Menu, X, Users, Download } from "lucide-react";
 import LogoutButton from "@/app/admin/LogoutButton";
 
 export default function AdminSidebar() {
@@ -23,9 +23,11 @@ export default function AdminSidebar() {
 
   const navLinks = [
     { name: "Projects", href: "/admin/projects", icon: <LayoutDashboard size={20} />, show: true },
+    { name: "Downloads", href: "/admin/downloads", icon: <Download size={20} />, show: true },
     { name: "Global Config", href: "/admin/settings", icon: <Settings2 size={20} />, show: !!userRole },
     { name: "User Management", href: "/admin/users", icon: <Users size={20} />, show: userRole === 'admin' },
   ];
+
 
   return (
     <>
