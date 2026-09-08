@@ -17,4 +17,5 @@ export interface Project {
   other_image_url?: string;
   other_url?: string;
   download_count?: number;
+  is_featured?: boolean;
 }

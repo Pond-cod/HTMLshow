@@ -18,7 +18,8 @@ import {
   HelpCircle, 
   Layers, 
   FileCode, 
-  Info 
+  Info,
+  Star 
 } from "lucide-react";
 
 export default function EditProjectForm({ initialProject }: { initialProject: any }) {
@@ -33,6 +34,7 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
     thumbnail_url: initialProject?.thumbnail_url || "",
     html_drive_id: initialProject?.html_drive_id || "",
     status: initialProject?.status || "draft",
+    is_featured: Boolean(initialProject?.is_featured) || false,
     manual_text: initialProject?.manual_text || "",
     manual_image_url: initialProject?.manual_image_url || "",
     manual_url: initialProject?.manual_url || "",
@@ -293,6 +295,31 @@ export default function EditProjectForm({ initialProject }: { initialProject: an
                  </p>
               </div>
             )}
+
+            {/* Featured Project Toggle */}
+            <div className="flex items-center justify-between p-4 bg-slate-800/40 border border-slate-700/60 rounded-xl hover:border-yellow-400/40 transition-colors">
+              <div className="flex items-start gap-3">
+                <div className={`p-2 rounded-lg mt-0.5 ${formData.is_featured ? 'bg-yellow-400/20 text-yellow-400' : 'bg-slate-800 text-slate-400'}`}>
+                  <Star size={18} className={formData.is_featured ? "fill-yellow-400" : ""} />
+                </div>
+                <div>
+                  <label htmlFor="is_featured" className="text-sm font-semibold text-white block cursor-pointer">
+                    โปรเจกต์เด่น (Featured Project)
+                  </label>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    นำเสนอให้แสดงขึ้นก่อนในหน้าแรก พร้อมป้ายกำกับพิเศษ
+                  </p>
+                </div>
+              </div>
+              <input
+                type="checkbox"
+                id="is_featured"
+                name="is_featured"
+                checked={formData.is_featured}
+                onChange={(e) => setFormData(prev => ({ ...prev, is_featured: e.target.checked }))}
+                className="w-5 h-5 accent-yellow-400 rounded cursor-pointer shrink-0"
+              />
+            </div>
           </div>
 
           {/* Media Links Card */}

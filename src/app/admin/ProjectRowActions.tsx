@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, EyeOff, Trash2, Edit, Check, XCircle, ArrowUp, ArrowDown } from "lucide-react";
+import { Eye, EyeOff, Trash2, Edit, Check, XCircle, ArrowUp, ArrowDown, Star } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -9,6 +9,40 @@ import { toast } from "sonner";
 export default function ProjectRowActions({ project, userRole, isFirst = false, isLast = false }: { project: any, userRole: string, isFirst?: boolean, isLast?: boolean }) {
   const router = useRouter();
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const toggleFeatured = async () => {
+    setIsUpdating(true);
+    const newFeaturedState = !project.is_featured;
+    
+    const featuredPromise = async () => {
+      const res = await fetch("/api/admin/projects", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: project.id,
+          is_featured: newFeaturedState,
+        }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to update featured status");
+      }
+      return res.json();
+    };
+
+    toast.promise(featuredPromise(), {
+      loading: newFeaturedState ? "กำลังปักหมุดโปรเจกต์เด่น..." : "กำลังยกเลิกโปรเจกต์เด่น...",
+      success: () => {
+        setIsUpdating(false);
+        router.refresh();
+        return newFeaturedState ? "ตั้งเป็นโปรเจกต์เด่นเรียบร้อย (นำเสนอขึ้นก่อน)" : "ยกเลิกการตั้งเป็นโปรเจกต์เด่นแล้ว";
+      },
+      error: (err) => {
+        setIsUpdating(false);
+        return err.message || "เกิดข้อผิดพลาดในการอัปเดต";
+      }
+    });
+  };
 
   const handleReorder = async (direction: "up" | "down") => {
     setIsUpdating(true);
@@ -131,6 +165,20 @@ export default function ProjectRowActions({ project, userRole, isFirst = false, 
         title="Move Down"
       >
         <ArrowDown size={18} />
+      </button>
+
+      {/* Featured Star Toggle */}
+      <button
+        onClick={toggleFeatured}
+        disabled={isUpdating}
+        className={`p-2 rounded-xl transition-all hover:scale-110 disabled:opacity-50 ${
+          project.is_featured 
+            ? "text-yellow-400 bg-yellow-400/15 hover:bg-yellow-400/25 shadow-[0_0_12px_rgba(250,204,21,0.25)] border border-yellow-400/30" 
+            : "text-slate-500 hover:text-yellow-400 hover:bg-yellow-400/10"
+        }`}
+        title={project.is_featured ? "ยกเลิกการตั้งเป็นโปรเจกต์เด่น" : "ตั้งเป็นโปรเจกต์เด่น (นำเสนอขึ้นก่อน)"}
+      >
+        <Star size={18} className={project.is_featured ? "fill-yellow-400" : ""} />
       </button>
 
       {canEdit && (

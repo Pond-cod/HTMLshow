@@ -53,7 +53,7 @@ export const getAllProjects = async (): Promise<Project[]> => {
   const sheets = getSheetsClient();
   try {
     const sheetName = await getFirstSheetName(sheets, spreadsheetId);
-    const range = `${sheetName}!A2:R`;
+    const range = `${sheetName}!A2:S`;
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
@@ -80,6 +80,7 @@ export const getAllProjects = async (): Promise<Project[]> => {
       other_image_url: row[15] || "",
       other_url: row[16] || "",
       download_count: parseInt(row[17] || "0", 10) || 0,
+      is_featured: row[18] === "true" || row[18] === "TRUE" || row[18] === "1",
     }));
   } catch (error: any) {
     console.error("Error fetching projects from sheets:", error?.message);
@@ -90,7 +91,13 @@ export const getAllProjects = async (): Promise<Project[]> => {
 export const getPublishedProjects = async (): Promise<Project[]> => {
   try {
     const projects = await getAllProjects();
-    return projects.filter((p) => p.status === "published");
+    const published = projects.filter((p) => p.status === "published");
+    // Sort featured projects to the front, preserving relative order
+    return published.sort((a, b) => {
+      if (a.is_featured && !b.is_featured) return -1;
+      if (!a.is_featured && b.is_featured) return 1;
+      return 0;
+    });
   } catch (error) {
     return [];
   }
@@ -133,6 +140,7 @@ export const addProject = async (projectData: Partial<Project>, userRole?: strin
     other_image_url: projectData.other_image_url || "",
     other_url: projectData.other_url || "",
     download_count: 0,
+    is_featured: Boolean(projectData.is_featured),
   };
 
   const values = [
@@ -154,7 +162,8 @@ export const addProject = async (projectData: Partial<Project>, userRole?: strin
       newProject.other_text,
       newProject.other_image_url,
       newProject.other_url,
-      newProject.download_count
+      newProject.download_count,
+      newProject.is_featured ? "true" : "false"
     ]
   ];
 
@@ -185,10 +194,10 @@ export const addProject = async (projectData: Partial<Project>, userRole?: strin
       }
     });
 
-    // Update the newly inserted row at A2:R2
+    // Update the newly inserted row at A2:S2
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: `${sheetName}!A2:R2`,
+      range: `${sheetName}!A2:S2`,
       valueInputOption: "USER_ENTERED",
       requestBody: { values },
     });
@@ -210,7 +219,7 @@ export const updateProject = async (id: string, updateData: Partial<Project>, us
   const sheets = getSheetsClient();
   
   const sheetName = await getFirstSheetName(sheets, spreadsheetId!);
-  const range = `${sheetName}!A2:R`;
+  const range = `${sheetName}!A2:S`;
 
   const response = await sheets.spreadsheets.values.get({
     spreadsheetId,
@@ -232,6 +241,10 @@ export const updateProject = async (id: string, updateData: Partial<Project>, us
     status = 'pending';
   }
 
+  const isFeaturedVal = updateData.is_featured !== undefined 
+    ? (updateData.is_featured ? "true" : "false") 
+    : (existingRow[18] || "false");
+
   const updatedValues = [
     id,
     updateData.title !== undefined ? updateData.title : existingRow[1],
@@ -251,11 +264,12 @@ export const updateProject = async (id: string, updateData: Partial<Project>, us
     updateData.other_image_url !== undefined ? updateData.other_image_url : (existingRow[15] || ""),
     updateData.other_url !== undefined ? updateData.other_url : (existingRow[16] || ""),
     updateData.download_count !== undefined ? updateData.download_count : parseInt(existingRow[17] || "0", 10),
+    isFeaturedVal,
   ];
 
   await sheets.spreadsheets.values.update({
     spreadsheetId,
-    range: `${sheetName}!A${sheetRow}:R${sheetRow}`,
+    range: `${sheetName}!A${sheetRow}:S${sheetRow}`,
     valueInputOption: "USER_ENTERED",
     requestBody: { values: [updatedValues] },
   });
@@ -278,7 +292,7 @@ export const deleteProject = async (id: string): Promise<boolean> => {
   
   const valuesResponse = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: `${sheetName}!A2:R`,
+    range: `${sheetName}!A2:S`,
   });
   
   const rows = valuesResponse.data.values || [];
@@ -324,7 +338,7 @@ export const reorderProject = async (id: string, direction: "up" | "down"): Prom
   
   const valuesResponse = await sheets.spreadsheets.values.get({
     spreadsheetId,
-    range: `${sheetName}!A2:R`,
+    range: `${sheetName}!A2:S`,
   });
   
   const rows = valuesResponse.data.values || [];

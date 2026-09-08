@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, X, ExternalLink, BookOpen, PlayCircle, Maximize2, Link2, Download } from "lucide-react";
+import { ArrowRight, X, ExternalLink, BookOpen, PlayCircle, Maximize2, Link2, Download, Sparkles, Star } from "lucide-react";
 import Image from "next/image";
 import { cleanImageUrl } from "@/lib/utils";
 import { Project } from "@/types/project";
@@ -68,17 +68,31 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
           whileHover={{ y: -6, scale: 1.015 }}
           className="group relative"
         >
-          {/* Glowing shadow behind the card on hover */}
-          <div className="absolute -inset-0.5 bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 rounded-2xl sm:rounded-3xl blur opacity-0 group-hover:opacity-25 transition duration-700"></div>
+          {/* Glowing shadow behind the card: persistent if featured, amplified on hover */}
+          <div className={`absolute -inset-0.5 bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 rounded-2xl sm:rounded-3xl blur transition duration-700 ${
+            project.is_featured ? 'opacity-30 group-hover:opacity-60' : 'opacity-0 group-hover:opacity-25'
+          }`} />
           
           <div 
             onClick={() => setSelectedProject(project)}
             onKeyDown={(e) => e.key === 'Enter' && setSelectedProject(project)}
             role="button"
             tabIndex={0}
-            className="w-full text-left relative flex flex-col h-full overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/90 backdrop-blur-md border border-slate-800/80 transition-all duration-500 group-hover:border-yellow-400/40 cursor-pointer focus:outline-none focus:ring-2 focus:ring-yellow-400/50 active:scale-[0.98]"
+            className={`w-full text-left relative flex flex-col h-full overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/90 backdrop-blur-md transition-all duration-500 cursor-pointer focus:outline-none focus:ring-2 focus:ring-yellow-400/50 active:scale-[0.98] ${
+              project.is_featured 
+                ? 'border-2 border-yellow-400/60 shadow-[0_0_20px_rgba(250,204,21,0.15)] group-hover:border-yellow-400' 
+                : 'border border-slate-800/80 group-hover:border-yellow-400/40'
+            }`}
           >
             <div className="aspect-[16/10] w-full relative overflow-hidden bg-slate-950">
+              {/* Featured Badge */}
+              {project.is_featured && (
+                <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/85 backdrop-blur-md border border-yellow-400/50 text-yellow-400 text-xs font-bold shadow-[0_0_15px_rgba(250,204,21,0.35)]">
+                  <Sparkles size={13} className="text-yellow-400 animate-pulse" />
+                  <span>แนะนำ</span>
+                </div>
+              )}
+
               {project.thumbnail_url ? (
                 <Image
                   src={cleanImageUrl(project.thumbnail_url)}
@@ -97,7 +111,7 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent opacity-85 group-hover:opacity-70 transition-opacity duration-500" />
               
               {/* Expand icon on hover */}
-              <div className="absolute top-3 right-3 p-2 bg-black/40 backdrop-blur-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute top-3 right-3 p-2 bg-black/40 backdrop-blur-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
                 <Maximize2 size={14} className="text-white/80" />
               </div>
             </div>
@@ -138,7 +152,14 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
               {/* Modal Header */}
               <div className="flex items-center justify-between p-3 sm:p-4 md:p-5 border-b border-white/5 bg-slate-900/80 backdrop-blur-md shrink-0">
                 <div className="min-w-0 flex-1 mr-3">
-                  <h2 className="text-base sm:text-lg md:text-2xl font-bold text-white tracking-tight truncate">{selectedProject.title}</h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base sm:text-lg md:text-2xl font-bold text-white tracking-tight truncate">{selectedProject.title}</h2>
+                    {selectedProject.is_featured && (
+                      <span className="shrink-0 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-yellow-400/15 text-yellow-400 border border-yellow-400/30">
+                        <Star size={12} className="fill-yellow-400" /> แนะนำ
+                      </span>
+                    )}
+                  </div>
                   {selectedProject.last_updated && (
                     <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
                       Updated: {new Date(selectedProject.last_updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

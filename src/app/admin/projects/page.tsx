@@ -1,7 +1,7 @@
 import { getAllProjects } from "@/lib/google/sheets";
 import { getSession } from "@/lib/auth";
 import Link from "next/link";
-import { Plus, CheckCircle, Clock, PenTool } from "lucide-react";
+import { Plus, CheckCircle, Clock, PenTool, Star } from "lucide-react";
 import ProjectRowActions from "../ProjectRowActions";
 import { cleanImageUrl } from "@/lib/utils";
 
@@ -74,7 +74,15 @@ export default async function AdminProjectsPage() {
                             <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-600 font-bold uppercase tracking-widest bg-slate-900">Void</div>
                           )}
                         </div>
-                        <div className="font-bold text-slate-100 text-lg group-hover:text-yellow-400 transition-colors">{project.title}</div>
+                        <div className="font-bold text-slate-100 text-lg group-hover:text-yellow-400 transition-colors flex flex-wrap items-center gap-2">
+                          <span>{project.title}</span>
+                          {project.is_featured && (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-yellow-400/15 text-yellow-400 border border-yellow-400/30 shadow-[0_0_12px_rgba(250,204,21,0.2)]">
+                              <Star size={11} className="fill-yellow-400" />
+                              Featured
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="px-4 sm:px-6 py-5">
