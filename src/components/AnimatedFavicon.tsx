@@ -97,10 +97,22 @@ export default function AnimatedFavicon() {
       intervalId = setInterval(tick, 100);
     };
 
+    // Animated Title: Scrolling Marquee with Color-Changing Orbs
+    const colorOrbs = ["🟡", "🟠", "🔴", "🟣", "🔵", "🟢"];
+    const baseText = "🚀 DeeDevIOT  •  HTML Showcase Portal  ✨  •  ";
+    let textOffset = 0;
+    let orbIndex = 0;
+
+    const titleIntervalId = setInterval(() => {
+      textOffset = (textOffset + 1) % baseText.length;
+      orbIndex = (orbIndex + 1) % colorOrbs.length;
+      const scrolledText = baseText.slice(textOffset) + baseText.slice(0, textOffset);
+      document.title = `${colorOrbs[orbIndex]} ${scrolledText}`;
+    }, 320);
+
     return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
+      if (intervalId) clearInterval(intervalId);
+      if (titleIntervalId) clearInterval(titleIntervalId);
     };
   }, []);
 
