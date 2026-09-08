@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, X, ExternalLink, BookOpen, PlayCircle, Maximize2, Link2, Download, Sparkles, Star } from "lucide-react";
+import { ArrowRight, X, ExternalLink, BookOpen, PlayCircle, Maximize2, Link2, Download, Sparkles, Star, Search } from "lucide-react";
 import Image from "next/image";
 import { cleanImageUrl } from "@/lib/utils";
 import { Project } from "@/types/project";
@@ -12,6 +12,28 @@ import { downloadProjectCode } from "@/lib/download";
 export default function ProjectGrid({ projects }: { projects: Project[] }) {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<"all" | "featured" | "html" | "gas">("all");
+
+  const featuredCount = projects.filter(p => p.is_featured).length;
+  const gasCount = projects.filter(p => p.html_drive_id?.startsWith('http')).length;
+  const htmlCount = projects.filter(p => !p.html_drive_id?.startsWith('http')).length;
+
+  const filteredProjects = projects.filter((project) => {
+    if (filterType === "featured" && !project.is_featured) return false;
+    if (filterType === "gas" && !project.html_drive_id?.startsWith('http')) return false;
+    if (filterType === "html" && project.html_drive_id?.startsWith('http')) return false;
+
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase().trim();
+      const matchTitle = project.title?.toLowerCase().includes(q);
+      const matchManual = project.manual_text?.toLowerCase().includes(q);
+      const matchLearning = project.learning_text?.toLowerCase().includes(q);
+      const matchOther = project.other_text?.toLowerCase().includes(q);
+      return matchTitle || matchManual || matchLearning || matchOther;
+    }
+    return true;
+  });
 
   const handleDownload = async (projectId: string, driveId: string, title: string) => {
     await downloadProjectCode(projectId, driveId, title, (newCount) => {
@@ -58,77 +80,189 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 relative z-10">
-      {projects.map((project, index) => (
-        <motion.div
-          key={project.id}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: index * 0.08, ease: "easeOut" }}
-          whileHover={{ y: -6, scale: 1.015 }}
-          className="group relative"
-        >
-          {/* Glowing shadow behind the card: persistent if featured, amplified on hover */}
-          <div className={`absolute -inset-0.5 bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 rounded-2xl sm:rounded-3xl blur transition duration-700 ${
-            project.is_featured ? 'opacity-30 group-hover:opacity-60' : 'opacity-0 group-hover:opacity-25'
-          }`} />
-          
-          <div 
-            onClick={() => setSelectedProject(project)}
-            onKeyDown={(e) => e.key === 'Enter' && setSelectedProject(project)}
-            role="button"
-            tabIndex={0}
-            className={`w-full text-left relative flex flex-col h-full overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/90 backdrop-blur-md transition-all duration-500 cursor-pointer focus:outline-none focus:ring-2 focus:ring-yellow-400/50 active:scale-[0.98] ${
-              project.is_featured 
-                ? 'border-2 border-yellow-400/60 shadow-[0_0_20px_rgba(250,204,21,0.15)] group-hover:border-yellow-400' 
-                : 'border border-slate-800/80 group-hover:border-yellow-400/40'
+      {/* Showcase Toolbar: Search & Category Filters */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8 relative z-20">
+        {/* Category Filter Pills */}
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+          <button
+            type="button"
+            onClick={() => setFilterType("all")}
+            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 flex items-center gap-1.5 shrink-0 ${
+              filterType === "all"
+                ? "bg-yellow-400 text-slate-950 shadow-[0_0_15px_rgba(250,204,21,0.3)] scale-[1.02]"
+                : "bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800/80"
             }`}
           >
-            <div className="aspect-[16/10] w-full relative overflow-hidden bg-slate-950">
-              {/* Featured Badge */}
-              {project.is_featured && (
-                <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/85 backdrop-blur-md border border-yellow-400/50 text-yellow-400 text-xs font-bold shadow-[0_0_15px_rgba(250,204,21,0.35)]">
-                  <Sparkles size={13} className="text-yellow-400 animate-pulse" />
-                  <span>แนะนำ</span>
-                </div>
-              )}
+            <span>ทั้งหมด</span>
+            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${filterType === "all" ? "bg-black/20 text-slate-950" : "bg-slate-800 text-slate-400"}`}>
+              {projects.length}
+            </span>
+          </button>
 
-              {project.thumbnail_url ? (
-                <Image
-                  src={cleanImageUrl(project.thumbnail_url)}
-                  alt={project.title}
-                  fill
-                  priority={index < 6}
-                  className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-slate-700 font-medium bg-gradient-to-br from-slate-950 to-slate-900">
-                  <span className="opacity-40 tracking-widest uppercase text-[10px] sm:text-xs">No Cover</span>
-                </div>
-              )}
-              {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent opacity-85 group-hover:opacity-70 transition-opacity duration-500" />
-              
-              {/* Expand icon on hover */}
-              <div className="absolute top-3 right-3 p-2 bg-black/40 backdrop-blur-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-                <Maximize2 size={14} className="text-white/80" />
-              </div>
-            </div>
-            
-            <div className="absolute bottom-0 w-full p-4 sm:p-6 translate-y-1 group-hover:translate-y-0 transition-transform duration-500">
-              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-2 sm:mb-3 text-white truncate drop-shadow-lg tracking-tight">
-                {project.title}
-              </h2>
-              <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <span>View Project</span>
-                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
+          {featuredCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setFilterType("featured")}
+              className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 flex items-center gap-1.5 shrink-0 ${
+                filterType === "featured"
+                  ? "bg-amber-400 text-slate-950 shadow-[0_0_15px_rgba(251,191,36,0.35)] scale-[1.02]"
+                  : "bg-slate-900/80 text-amber-400/90 hover:text-amber-300 hover:bg-slate-800 border border-amber-500/30"
+              }`}
+            >
+              <Star size={14} className={filterType === "featured" ? "fill-slate-950" : "fill-amber-400"} />
+              <span>แนะนำ</span>
+              <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${filterType === "featured" ? "bg-black/20 text-slate-950" : "bg-amber-500/20 text-amber-300"}`}>
+                {featuredCount}
+              </span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setFilterType("html")}
+            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 flex items-center gap-1.5 shrink-0 ${
+              filterType === "html"
+                ? "bg-yellow-400 text-slate-950 shadow-[0_0_15px_rgba(250,204,21,0.3)] scale-[1.02]"
+                : "bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800/80"
+            }`}
+          >
+            <span>HTML</span>
+            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${filterType === "html" ? "bg-black/20 text-slate-950" : "bg-slate-800 text-slate-400"}`}>
+              {htmlCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setFilterType("gas")}
+            className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all duration-300 flex items-center gap-1.5 shrink-0 ${
+              filterType === "gas"
+                ? "bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.35)] scale-[1.02]"
+                : "bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800/80"
+            }`}
+          >
+            <span>Apps Script</span>
+            <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-black ${filterType === "gas" ? "bg-black/20 text-white" : "bg-slate-800 text-slate-400"}`}>
+              {gasCount}
+            </span>
+          </button>
+        </div>
+
+        {/* Live Search Input */}
+        <div className="relative w-full sm:w-72 lg:w-80 shrink-0">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <Search size={16} />
           </div>
-        </motion.div>
-      ))}
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="ค้นหาชื่อผลงาน..."
+            className="w-full pl-10 pr-9 py-2 bg-slate-900/90 border border-slate-800 focus:border-yellow-400/80 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 outline-none transition-all shadow-inner focus:ring-1 focus:ring-yellow-400/30"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white"
+            >
+              <X size={15} />
+            </button>
+          )}
+        </div>
       </div>
+
+      {filteredProjects.length === 0 ? (
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-16 px-4 bg-slate-900/40 backdrop-blur-md rounded-2xl border border-slate-800/80"
+        >
+          <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center mx-auto mb-3 border border-slate-700">
+            <Search size={22} className="text-slate-500" />
+          </div>
+          <p className="text-slate-300 text-base font-semibold">ไม่พบผลงานที่ตรงกับเงื่อนไข</p>
+          <p className="text-xs text-slate-500 mt-1">ลองเปลี่ยนคำค้นหาหรือเลือกดูหมวดหมู่อื่น</p>
+          <button
+            onClick={() => { setSearchTerm(""); setFilterType("all"); }}
+            className="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-yellow-400 rounded-xl text-xs font-bold transition-all border border-slate-700"
+          >
+            ล้างตัวกรองทั้งหมด
+          </button>
+        </motion.div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 relative z-10">
+        {filteredProjects.map((project, index) => (
+          <motion.div
+            key={project.id}
+            layout
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: Math.min(index * 0.05, 0.3), ease: "easeOut" }}
+            whileHover={{ y: -6, scale: 1.015 }}
+            className="group relative"
+          >
+            {/* Glowing shadow behind the card: persistent if featured, amplified on hover */}
+            <div className={`absolute -inset-0.5 bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 rounded-2xl sm:rounded-3xl blur transition duration-700 ${
+              project.is_featured ? 'opacity-30 group-hover:opacity-60' : 'opacity-0 group-hover:opacity-25'
+            }`} />
+            
+            <div 
+              onClick={() => setSelectedProject(project)}
+              onKeyDown={(e) => e.key === 'Enter' && setSelectedProject(project)}
+              role="button"
+              tabIndex={0}
+              className={`w-full text-left relative flex flex-col h-full overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900/90 backdrop-blur-md transition-all duration-500 cursor-pointer focus:outline-none focus:ring-2 focus:ring-yellow-400/50 active:scale-[0.98] ${
+                project.is_featured 
+                  ? 'border-2 border-yellow-400/60 shadow-[0_0_20px_rgba(250,204,21,0.15)] group-hover:border-yellow-400' 
+                  : 'border border-slate-800/80 group-hover:border-yellow-400/40'
+              }`}
+            >
+              <div className="aspect-[16/10] w-full relative overflow-hidden bg-slate-950">
+                {/* Featured Badge */}
+                {project.is_featured && (
+                  <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/85 backdrop-blur-md border border-yellow-400/50 text-yellow-400 text-xs font-bold shadow-[0_0_15px_rgba(250,204,21,0.35)]">
+                    <Sparkles size={13} className="text-yellow-400 animate-pulse" />
+                    <span>แนะนำ</span>
+                  </div>
+                )}
+
+                {project.thumbnail_url ? (
+                  <Image
+                    src={cleanImageUrl(project.thumbnail_url)}
+                    alt={project.title}
+                    fill
+                    priority={index < 6}
+                    className="object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-700 font-medium bg-gradient-to-br from-slate-950 to-slate-900">
+                    <span className="opacity-40 tracking-widest uppercase text-[10px] sm:text-xs">No Cover</span>
+                  </div>
+                )}
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent opacity-85 group-hover:opacity-70 transition-opacity duration-500" />
+                
+                {/* Expand icon on hover */}
+                <div className="absolute top-3 right-3 p-2 bg-black/40 backdrop-blur-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+                  <Maximize2 size={14} className="text-white/80" />
+                </div>
+              </div>
+              
+              <div className="absolute bottom-0 w-full p-4 sm:p-6 translate-y-1 group-hover:translate-y-0 transition-transform duration-500">
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-2 sm:mb-3 text-white truncate drop-shadow-lg tracking-tight">
+                  {project.title}
+                </h2>
+                <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <span>View Project</span>
+                  <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+        </div>
+      )}
 
       {/* Full-Screen Modal rendered via React Portal to completely escape parent z-index stacking contexts */}
       {mounted && createPortal(
