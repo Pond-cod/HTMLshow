@@ -3,7 +3,23 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Editor from "@monaco-editor/react";
-import { Save, UploadCloud, Loader2, Link as LinkIcon, Clock, Download } from "lucide-react";
+import { 
+  Save, 
+  UploadCloud, 
+  Loader2, 
+  Link as LinkIcon, 
+  Clock, 
+  Download, 
+  Copy, 
+  Check, 
+  AlertTriangle, 
+  CheckCircle2, 
+  XCircle, 
+  HelpCircle, 
+  Layers, 
+  FileCode, 
+  Info 
+} from "lucide-react";
 
 export default function EditProjectForm({ initialProject }: { initialProject: any }) {
   const router = useRouter();
@@ -515,65 +531,244 @@ function UploadButton({ field, uploadingField, onUpload, accept, label = "Upload
 }
 
 function GasGuidePanel() {
-  const codeToCopy = `function doGet(e) {
-  return HtmlService.createHtmlOutputFromFile('Index')
-    .setTitle('ระบบจัดการ - DeeDevIOT')
+  const [templateType, setTemplateType] = useState<'template' | 'simple'>('template');
+  const [copied, setCopied] = useState(false);
+
+  const templateCode = `function doGet(e) {
+  // รองรับหลายหน้า (เช่น ?page=admin หรือหน้าแรก Index)
+  let page = (e.parameter.page === 'admin') ? 'Admin' : 'Index';
+  let template = HtmlService.createTemplateFromFile(page);
+  template.scriptUrl = ScriptApp.getService().getUrl();
+
+  return template.evaluate()
+    .setTitle(page === 'Admin' ? 'ระบบหลังบ้าน' : 'ระบบจัดการ')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL); // 👈 สำคัญมาก: อนุญาตให้แสดงผลใน iframe
 }`;
 
+  const simpleCode = `function doGet(e) {
+  // แสดงผลไฟล์ Index.html หน้าเดียว
+  return HtmlService.createHtmlOutputFromFile('Index')
+    .setTitle('ระบบจัดการ')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL); // 👈 สำคัญมาก: อนุญาตให้แสดงผลใน iframe
+}`;
+
+  const activeCode = templateType === 'template' ? templateCode : simpleCode;
+
   const handleCopy = () => {
-    navigator.clipboard.writeText(codeToCopy);
-    alert("คัดลอกโค้ดไปยังคลิปบอร์ดแล้ว!");
+    navigator.clipboard.writeText(activeCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
   };
 
   return (
-    <div className="h-full overflow-y-auto p-6 bg-slate-950 text-slate-100 font-sans space-y-5">
-      <div className="border-b border-slate-800 pb-3">
-        <h3 className="text-lg font-bold text-yellow-400">Google Apps Script Integration Guide</h3>
-        <p className="text-xs text-slate-400 mt-1">ทำตามขั้นตอนด้านล่างเพื่อนำ Google Apps Script ของคุณมาแสดงผลบนเว็บไซต์</p>
+    <div className="h-full overflow-y-auto p-5 sm:p-6 bg-slate-950 text-slate-100 font-sans space-y-6">
+      {/* Header */}
+      <div className="border-b border-slate-800 pb-4">
+        <div className="flex items-center gap-2">
+          <span className="bg-yellow-400/20 text-yellow-400 text-xs font-bold px-2.5 py-0.5 rounded-full border border-yellow-400/30">
+            Guide
+          </span>
+          <h3 className="text-lg font-bold text-white tracking-wide">
+            Google Apps Script Integration Guide
+          </h3>
+        </div>
+        <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+          ขั้นตอนการตั้งค่า Apps Script ให้แสดงผลบนเว็บไซต์ผ่าน iframe ได้อย่างสมบูรณ์โดยไม่ติดปัญหาความปลอดภัย (X-Frame-Options)
+        </p>
       </div>
 
-      <div className="space-y-5">
-        <div className="flex gap-3">
-          <div className="w-6 h-6 rounded-full bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center shrink-0 font-mono text-xs font-bold text-yellow-400">1</div>
-          <div className="space-y-1.5 flex-1">
-            <h4 className="text-sm font-bold text-slate-200">แก้ไขฟังก์ชัน doGet() ใน Apps Script</h4>
-            <p className="text-xs text-slate-400">เปิดสคริปต์ของคุณและเพิ่ม <code className="text-yellow-400">.setXFrameOptionsMode(...)</code> เพื่ออนุญาตให้แสดงผลใน iframe:</p>
-            <div className="relative group bg-slate-900 border border-slate-800 rounded-xl overflow-hidden mt-1.5">
-              <pre className="p-3 text-[10px] sm:text-xs font-mono text-emerald-400 overflow-x-auto leading-relaxed">
-                {codeToCopy}
+      {/* Steps List */}
+      <div className="space-y-6">
+        {/* Step 1 */}
+        <div className="flex gap-3 sm:gap-4">
+          <div className="w-7 h-7 rounded-xl bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center shrink-0 font-mono text-xs font-bold text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.15)]">
+            1
+          </div>
+          <div className="space-y-2.5 flex-1 min-w-0">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h4 className="text-sm font-bold text-slate-200">
+                แก้ไขฟังก์ชัน <code className="text-yellow-400 font-mono bg-yellow-400/10 px-1.5 py-0.5 rounded">doGet(e)</code> ใน <span className="text-white font-mono">Code.gs</span>
+              </h4>
+              
+              {/* Type Switcher */}
+              <div className="flex bg-slate-900 border border-slate-800 p-0.5 rounded-lg text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => setTemplateType('template')}
+                  className={`px-2.5 py-1 rounded-md font-medium transition-all flex items-center gap-1.5 ${
+                    templateType === 'template' 
+                      ? 'bg-yellow-400 text-slate-950 font-bold shadow-sm' 
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Layers className="w-3 h-3" />
+                  แบบหลายหน้า (Template)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTemplateType('simple')}
+                  className={`px-2.5 py-1 rounded-md font-medium transition-all flex items-center gap-1.5 ${
+                    templateType === 'simple' 
+                      ? 'bg-yellow-400 text-slate-950 font-bold shadow-sm' 
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <FileCode className="w-3 h-3" />
+                  แบบหน้าเดียว (Index.html)
+                </button>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-400 leading-relaxed">
+              เปิดโปรเจกต์ใน Google Apps Script แล้วเพิ่ม <code className="text-amber-300 font-mono bg-amber-400/10 px-1 rounded">.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)</code> ต่อท้ายเพื่ออนุญาตให้แสดงใน iframe:
+            </p>
+
+            {/* Code Box */}
+            <div className="relative group bg-slate-900/90 border border-slate-800 rounded-xl overflow-hidden shadow-inner">
+              <div className="flex items-center justify-between px-3.5 py-2 bg-slate-900 border-b border-slate-800/80 text-[11px] text-slate-400 font-mono">
+                <span>Code.gs &gt; doGet(e)</span>
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-emerald-400 font-semibold">คัดลอกแล้ว!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Copy Code</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <pre className="p-3.5 text-[11px] sm:text-xs font-mono text-emerald-400 overflow-x-auto leading-relaxed">
+                {activeCode}
               </pre>
-              <button
-                type="button"
-                onClick={handleCopy}
-                className="absolute top-2 right-2 text-[10px] bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-2.5 py-1 rounded-md font-bold transition-all"
-              >
-                Copy Code
-              </button>
+            </div>
+
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 text-xs text-yellow-200/90 flex items-start gap-2.5">
+              <Info className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
+              <div>
+                <strong className="text-yellow-300 font-semibold">ข้อสังเกตสำคัญ:</strong> หากใช้ <code className="font-mono text-white bg-black/30 px-1 rounded">template.evaluate()</code> ให้เติม <code className="font-mono text-yellow-300 bg-black/30 px-1 rounded">.setXFrameOptionsMode(...)</code> ต่อท้าย <code className="font-mono text-white bg-black/30 px-1 rounded">evaluate()</code>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex gap-3 border-t border-slate-800/60 pt-3">
-          <div className="w-6 h-6 rounded-full bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center shrink-0 font-mono text-xs font-bold text-yellow-400">2</div>
-          <div className="space-y-1 flex-1">
-            <h4 className="text-sm font-bold text-slate-200">สร้างการให้บริการ (New Deployment)</h4>
-            <ul className="list-disc list-inside text-xs text-slate-400 space-y-1">
-              <li>คลิกปุ่ม <strong className="text-slate-300">Deploy (การทำให้ใช้งานได้)</strong> &gt; <strong className="text-slate-300">New deployment</strong></li>
-              <li>เลือกประเภทเป็น <strong className="text-slate-300">Web app (เว็บแอป)</strong></li>
-              <li>ตั้งค่า <strong className="text-slate-300">Execute as (เรียกใช้ในฐานะ)</strong> เป็น <strong className="text-slate-300">Me (ฉัน)</strong></li>
-              <li>ตั้งค่า <strong className="text-slate-300">Who has access (ผู้มีสิทธิ์เข้าถึง)</strong> เป็น <strong className="text-slate-300">Anyone (ทุกคน)</strong></li>
-              <li>กด <strong className="text-slate-300">Deploy</strong> และคัดลอก **Web app URL**</li>
-            </ul>
+        {/* Step 2 */}
+        <div className="flex gap-3 sm:gap-4 border-t border-slate-800/80 pt-5">
+          <div className="w-7 h-7 rounded-xl bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center shrink-0 font-mono text-xs font-bold text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.15)]">
+            2
+          </div>
+          <div className="space-y-3 flex-1 min-w-0">
+            <h4 className="text-sm font-bold text-slate-200">
+              สร้างการให้บริการ (Deploy) และสิทธิ์การเข้าถึง
+            </h4>
+            
+            <div className="grid sm:grid-cols-2 gap-3 text-xs">
+              <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 space-y-2">
+                <span className="text-[11px] font-bold text-yellow-400 uppercase tracking-wider block">กรณีสร้างครั้งแรก (New Deployment)</span>
+                <ol className="list-decimal list-inside space-y-1.5 text-slate-300">
+                  <li>คลิกปุ่ม <strong className="text-white">Deploy (การทำให้ใช้งานได้)</strong> &gt; <strong className="text-white">New deployment</strong></li>
+                  <li>เลือกประเภทเป็น ⚙️ <strong className="text-white">Web app (เว็บแอป)</strong></li>
+                  <li>ตั้งค่า Execute as: <span className="text-emerald-400 font-semibold">Me (ฉัน / บัญชีของคุณ)</span></li>
+                  <li>ตั้งค่า Who has access: <span className="text-amber-400 font-bold bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20">Anyone (ทุกคน)</span></li>
+                  <li>กด <strong className="text-white">Deploy</strong> และคัดลอก **Web app URL**</li>
+                </ol>
+              </div>
+
+              <div className="bg-amber-950/20 border border-amber-500/30 rounded-xl p-3.5 space-y-2">
+                <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                  กรณีแก้ไขโค้ดเดิม (สำคัญมาก ⚠️)
+                </span>
+                <p className="text-slate-300 leading-relaxed text-[11px]">
+                  หากคุณเคย Deploy ไปแล้วและมีการแก้ไขโค้ดใน <code className="font-mono text-amber-300">Code.gs</code> <b>ระบบจะไม่เปลี่ยนตามทันที</b> คุณต้อง:
+                </p>
+                <ol className="list-decimal list-inside space-y-1 text-slate-300 text-[11px]">
+                  <li>ไปที่เมนู <strong className="text-white">Deploy &gt; Manage deployments</strong></li>
+                  <li>คลิกไอคอน <strong className="text-white">ดินสอ (Edit)</strong> ด้านบน</li>
+                  <li>ตรงช่อง Version ให้เลือกเป็น <strong className="text-amber-300">New version (เวอร์ชันใหม่)</strong></li>
+                  <li>กดปุ่ม <strong className="text-white">Deploy</strong> เสมอ มิเช่นนั้นจะยังติด Error เดิม</li>
+                </ol>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="flex gap-3 border-t border-slate-800/60 pt-3">
-          <div className="w-6 h-6 rounded-full bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center shrink-0 font-mono text-xs font-bold text-yellow-400">3</div>
-          <div className="space-y-1 flex-1">
-            <h4 className="text-sm font-bold text-slate-200">วาง URL ในระบบ</h4>
-            <p className="text-xs text-slate-400">วางลิงก์ที่คัดลอกมาใส่ในช่อง <strong className="text-yellow-400">Apps Script URL</strong> ด้านบน แล้วกดบันทึกโปรเจกต์</p>
+        {/* Step 3 */}
+        <div className="flex gap-3 sm:gap-4 border-t border-slate-800/80 pt-5">
+          <div className="w-7 h-7 rounded-xl bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center shrink-0 font-mono text-xs font-bold text-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.15)]">
+            3
+          </div>
+          <div className="space-y-3 flex-1 min-w-0">
+            <h4 className="text-sm font-bold text-slate-200">
+              ตรวจสอบรูปแบบ URL และวางในระบบ
+            </h4>
+            
+            <div className="space-y-2 text-xs">
+              <div className="flex items-start gap-2.5 bg-emerald-950/20 border border-emerald-500/30 rounded-xl p-3">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <span className="font-bold text-emerald-300 text-[11px]">URL ที่ถูกต้อง (Web App URL):</span>
+                  <p className="font-mono text-[11px] text-slate-300 truncate mt-0.5">
+                    https://script.google.com/macros/s/<span className="text-emerald-400">[DEPLOYMENT_ID]</span>/exec
+                  </p>
+                  <span className="text-[10px] text-slate-400 block mt-0.5">*สังเกต: ต้องมีคำว่า <code className="text-emerald-400 font-mono">/macros/s/</code> และลงท้ายด้วย <code className="text-emerald-400 font-mono">/exec</code></span>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2.5 bg-rose-950/20 border border-rose-500/30 rounded-xl p-3">
+                <XCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <span className="font-bold text-rose-300 text-[11px]">URL ที่ผิด (ห้ามนำมาใส่):</span>
+                  <p className="font-mono text-[11px] text-slate-400 truncate mt-0.5">
+                    https://script.google.com/home/projects/.../edit
+                  </p>
+                  <span className="text-[10px] text-rose-300/80 block mt-0.5">*URL ที่ลงท้ายด้วย <code className="font-mono">/edit</code> คือหน้าต่างแก้ไขโค้ด ไม่ใช่หน้าเว็บแอป</span>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-400">
+              นำ URL ที่ถูกต้องมาวางในช่อง <strong className="text-yellow-400 font-mono">Apps Script URL</strong> ด้านขวาบน แล้วกดปุ่ม <strong className="text-white">Save Project</strong>
+            </p>
+          </div>
+        </div>
+
+        {/* FAQ & Troubleshooting Section */}
+        <div className="border-t border-slate-800/80 pt-5">
+          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
+              <HelpCircle className="w-4 h-4 text-yellow-400" />
+              <span>การแก้ไขปัญหาที่พบบ่อย (Troubleshooting)</span>
+            </div>
+
+            <div className="space-y-2.5 text-xs text-slate-300">
+              <div className="bg-slate-950/70 p-3 rounded-xl border border-slate-800/80 space-y-1">
+                <p className="font-semibold text-rose-300 text-[11px] flex items-center gap-1.5">
+                  <span>❌ หน้าเว็บขึ้นไอคอนไฟล์เศร้า / Console ฟ้อง Refused to display (X-Frame-Options)</span>
+                </p>
+                <p className="text-[11px] text-slate-400 pl-4 leading-relaxed">
+                  เกิดจากสคริปต์ยังไม่มี <code className="text-yellow-400 font-mono">.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)</code> หรือหลังแก้โค้ดแล้วลืมกด Deploy เป็น <b>New version</b>
+                </p>
+              </div>
+
+              <div className="bg-slate-950/70 p-3 rounded-xl border border-slate-800/80 space-y-1">
+                <p className="font-semibold text-amber-300 text-[11px] flex items-center gap-1.5">
+                  <span>⚠️ หน้าเว็บขึ้นให้ล็อกอิน Google ซ้ำๆ หรือสิทธิ์เข้าถึงถูกปฏิเสธ (Access Denied)</span>
+                </p>
+                <p className="text-[11px] text-slate-400 pl-4 leading-relaxed">
+                  เกิดจากตอน Deploy ไม่ได้เลือก <b>Who has access</b> เป็น <b>Anyone (ทุกคน)</b> ทำให้ผู้เยี่ยมชมที่ไม่ใช่เจ้าของโปรเจกต์เปิดดูไม่ได้
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
