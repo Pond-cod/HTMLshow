@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Kanit, Prompt, Sarabun, Mitr } from "next/font/google";
 import { Toaster } from "sonner";
+import AnimatedFavicon from "@/components/AnimatedFavicon";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
@@ -44,6 +45,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark scroll-smooth">
       <body className={`${inter.variable} ${kanit.variable} ${prompt.variable} ${sarabun.variable} ${mitr.variable} ${inter.className} antialiased min-h-screen bg-slate-950 text-slate-50 selection:bg-yellow-400 selection:text-slate-950`}>
+        <AnimatedFavicon />
         {/* Subtle global background mesh/glow */}
         <div className="fixed inset-0 z-[-1] h-full w-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))]"></div>
         {children}
