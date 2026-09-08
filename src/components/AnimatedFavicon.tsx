@@ -99,7 +99,7 @@ export default function AnimatedFavicon() {
 
     // Animated Title: Scrolling Marquee with Color-Changing Orbs
     const colorOrbs = ["🟡", "🟠", "🔴", "🟣", "🔵", "🟢"];
-    const baseText = "🚀 DeeDevIOT  •  HTML Showcase Portal  ✨  •  ";
+    const baseText = "🚀 DeeDevIOT  •  HTML Show ✨  •  ";
     let textOffset = 0;
     let orbIndex = 0;
 

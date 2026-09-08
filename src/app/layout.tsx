@@ -17,7 +17,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "HTML Showcase Portal",
+  title: "HTML Show",
   description: "A fast, secure, and fully customizable HTML CMS and Showcase Portal.",
   keywords: ["HTML", "CMS", "Showcase", "Portal", "Google Apps Script", "Web App"],
   appleWebApp: {
@@ -26,13 +26,13 @@ export const metadata: Metadata = {
     title: "DeeDevIOT",
   },
   openGraph: {
-    title: "HTML Showcase Portal",
+    title: "HTML Show",
     description: "A fast, secure, and fully customizable HTML CMS and Showcase Portal.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "HTML Showcase Portal",
+    title: "HTML Show",
     description: "A fast, secure, and fully customizable HTML CMS and Showcase Portal.",
   }
 };
